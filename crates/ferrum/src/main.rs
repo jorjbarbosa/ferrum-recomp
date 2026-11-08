@@ -3,8 +3,8 @@
 
 //! Command-line interface of the ferrum static recompiler.
 //!
-//! `recomp` generates the Rust workspace of a game from its XEX and a TOML config; `dump` and
-//! `disasm` look into a XEX.
+//! `init` writes the skeleton of a port; `recomp` generates the Rust workspace of a game from its
+//! XEX and a TOML config; `dump` and `disasm` look into a XEX.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
@@ -12,6 +12,7 @@
 mod config;
 mod disasm;
 mod dump;
+mod init;
 mod recomp;
 
 use std::num::ParseIntError;
@@ -32,6 +33,21 @@ struct Cli {
 /// Operations offered by the CLI.
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Write the skeleton of a port: its workspace, the config of `recomp` and a binary crate.
+    ///
+    /// The directory may already exist and hold other files, such as a git repository with
+    /// ferrum as a submodule; the files `init` writes may not, unless --force overwrites them.
+    Init {
+        /// The directory of the port.
+        dir: PathBuf,
+        /// The name of the port's binary crate; the generated root crate is `<name>-ppc`. The
+        /// name of the directory by default.
+        #[arg(long)]
+        name: Option<String>,
+        /// Overwrite the files of the skeleton that already exist.
+        #[arg(long)]
+        force: bool,
+    },
     /// Generate the Rust output workspace described by a TOML config.
     Recomp {
         /// Path to the recompilation config.
@@ -76,6 +92,7 @@ fn parse_addr(text: &str) -> Result<u32, ParseIntError> {
 /// Runs the selected subcommand.
 fn run(cli: Cli) -> Result<()> {
     match cli.command {
+        Command::Init { dir, name, force } => init::run(&dir, name.as_deref(), force),
         Command::Recomp { config, strict } => recomp::run(&config, strict),
         Command::Dump { xex, strict } => dump::run(&xex, strict),
         Command::Disasm { xex, addr, count } => disasm::run(&xex, addr, count),

@@ -76,19 +76,42 @@ ferrum dump game/default.xex                       # headers, sections, .pdata, 
 ferrum disasm game/default.xex --addr 0x82001000   # the function at an address
 ```
 
-Recompile it with a config. Three keys are required:
+Start a port with `ferrum init`, outside the ferrum checkout, then recompile the game into it:
+
+```sh
+ferrum init ../my-port --name game          # the name of the directory by default
+cp path/to/default.xex ../my-port/game/
+ferrum recomp ../my-port/config/game.toml   # --strict turns warnings into errors
+cd ../my-port
+cargo run -p game
+```
+
+`ferrum init` writes the port's workspace, the config of `ferrum recomp` and a binary crate that
+runs the generated code (see [Writing a port](#writing-a-port)):
+
+```text
+my-port/
+  Cargo.toml          workspace; excludes generated/, and the ferrum checkout if it lies here
+  Cargo.lock          a copy of this repository's, for the same dependency versions
+  config/game.toml    the config of ferrum recomp
+  crates/game/        the port's binary crate
+  game/               the game files, ignored by git
+  generated/          the output of ferrum recomp, ignored by git
+```
+
+It names the ferrum checkout it was built from, by a relative path when it can. A port that keeps
+ferrum as a git submodule builds `ferrum` from that submodule, and its workspace excludes it. The
+directory may already hold other files; `init` refuses to overwrite its own files without
+`--force`, and only adds to an existing `.gitignore`.
+
+The config it writes holds only the keys that `ferrum recomp` cannot run without:
 
 ```toml
 [main]
-xex = "game/default.xex"
-out = "game-ppc"
+xex = "../game/default.xex"
+out = "../generated"
 crate_name = "game-ppc"
-```
-
-```sh
-ferrum recomp game.toml      # --strict turns warnings into errors
-cd game-ppc
-cargo check
+runtime = "../../ferrum-recomp/crates/ferrum-runtime"
 ```
 
 [`docs/config.example.toml`](docs/config.example.toml) documents every key: functions the
@@ -107,8 +130,9 @@ Cargo to keep the machine usable.
 
 ## Writing a port
 
-A port is a binary crate that depends on the generated root crate and on `ferrum-runtime`. In
-outline, leaving out the stack, the thread setup and the heap that a real kernel provides:
+A port is a binary crate that depends on the generated root crate and on `ferrum-runtime`.
+`ferrum init` writes one whose `main.rs` does this, leaving out the stack, the thread setup and the
+heap that a real kernel provides:
 
 ```rust
 use ferrum_runtime::{FnTable, HookTable, Kernels, Memory, PpcContext, Xam, Xboxkrnl, enter};
@@ -120,7 +144,7 @@ struct Kernel;
 impl Xboxkrnl for Kernel {}
 impl Xam for Kernel {}
 
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let xex = ferrum_xex::Xex::parse(&std::fs::read("game/default.xex")?)?;
     let mem = Memory::new()?;
     mem.write_bytes(xex.image.base, &xex.image.data);
@@ -130,14 +154,17 @@ fn main() -> anyhow::Result<()> {
     // Replacements for the functions listed under [hooks] function:
     // table.set(0x82003000, my_memcpy)?;
 
-    let hooks = HookTable::new(); // mid-asm hooks, by instruction address
+    let hooks = HookTable::new(); // mid-asm hooks, by instruction address, installed with `set`
     let kernel = Kernel;
     let k = Kernels { krnl: &kernel, xam: &kernel, table: &table, hooks: &hooks };
     game_ppc::imports::load(&mem, &k);
-    assert!(game_ppc::hooks::missing(&table, &hooks).is_empty());
+    let missing = game_ppc::hooks::missing(&table, &hooks);
+    if !missing.is_empty() {
+        return Err(format!("hooks not installed: {missing:?}").into());
+    }
 
     let mut ctx = PpcContext::new();
-    let entry = table.get(xex.image.entry).expect("the entry point is recompiled");
+    let entry = table.get(xex.image.entry).ok_or("the entry point was not recompiled")?;
     enter(entry, &mut ctx, &mem, &k);
     Ok(())
 }

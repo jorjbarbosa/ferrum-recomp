@@ -38,4 +38,4 @@ pub use error::Error;
 pub use hooks::{Action, Hooks, MidAsm, Override};
 pub use imports::{Import, Library, thunk_name};
 pub use program::{NonLocal, PRELUDE, Program, Statistics, function_name};
-pub use workspace::{DEFAULT_FUNCTIONS_PER_CRATE, Layout, OutputFile, write_workspace};
+pub use workspace::{DEFAULT_FUNCTIONS_PER_CRATE, Layout, OutputFile, PROFILE, write_workspace};

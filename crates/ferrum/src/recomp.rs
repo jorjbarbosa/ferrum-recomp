@@ -111,7 +111,7 @@ pub fn run(path: &Path, strict: bool) -> Result<()> {
 }
 
 /// The repository this binary was built from.
-fn repository() -> PathBuf {
+pub(crate) fn repository() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
         .nth(2)
