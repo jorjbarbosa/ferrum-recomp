@@ -9,7 +9,7 @@
 //! the code from its entry, resolving the jump tables of its `switch` statements on the way, and
 //! [`flow`] says what each instruction does to the flow of control. [`find_save_restore`] finds
 //! the compiler's register save and restore routines, which code generation inlines instead of
-//! calling.
+//! calling, and [`find_non_local`] the C runtime's `setjmp` and `longjmp`.
 //!
 //! The liveness of CR, XER, CTR and the reservation is not done yet.
 
@@ -24,6 +24,7 @@ mod discover;
 mod error;
 mod flow;
 mod jump_table;
+mod non_local;
 mod regs;
 mod save_restore;
 
@@ -33,4 +34,5 @@ pub use discover::{Discovery, Input, Source, THUNK_SIZE, Warning, discover};
 pub use error::Error;
 pub use flow::{Flow, Target, branch_target, flow, is_unconditional, links};
 pub use jump_table::JumpTable;
+pub use non_local::{NonLocalRoutines, find_non_local};
 pub use save_restore::{Family, Routine, SaveRestore, find_save_restore};
