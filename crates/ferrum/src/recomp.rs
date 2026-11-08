@@ -134,8 +134,14 @@ fn runtime(config: &Config) -> Result<PathBuf> {
     Ok(runtime)
 }
 
-/// Fails if `out` lies inside a Cargo workspace: Cargo gets confused by a workspace nested in
-/// another.
+/// Fails if `out` lies inside a Cargo workspace that does not list it under `exclude`.
+///
+/// Cargo makes a path dependency under a workspace's directory a member of that workspace unless
+/// `exclude` holds it (The Cargo Book, "Workspaces"). A port that depends on the generated root
+/// crate from inside its own workspace would then have the `workspace = true` keys of the
+/// generated manifests resolved against the port's root manifest instead of the output's, and the
+/// build fails ("`workspace.package.edition` was not defined"). Excluded, the output keeps its
+/// own workspace, and both the port and the output build.
 fn check_out(out: &Path) -> Result<()> {
     fs::create_dir_all(out).with_context(|| format!("cannot create {}", out.display()))?;
     let out = fs::canonicalize(out)?;
@@ -144,18 +150,35 @@ fn check_out(out: &Path) -> Result<()> {
         let Ok(text) = fs::read_to_string(&manifest) else {
             continue;
         };
-        let is_workspace = toml::from_str::<toml::Table>(&text)
-            .map(|table| table.contains_key("workspace"))
-            .unwrap_or(false);
-        if is_workspace {
+        let Some(workspace) = toml::from_str::<toml::Table>(&text)
+            .ok()
+            .and_then(|mut table| table.remove("workspace"))
+        else {
+            continue;
+        };
+        if !excludes(dir, &workspace, &out) {
             bail!(
-                "{} lies inside the Cargo workspace of {}; write the output elsewhere",
+                "{} lies inside the Cargo workspace of {}; list it under `exclude` in that \
+                 workspace, or write the output elsewhere",
                 out.display(),
                 dir.display()
             );
         }
     }
     Ok(())
+}
+
+/// Whether the `exclude` list of the workspace whose root is `root` holds `out`. Its entries are
+/// paths relative to the root, and each excludes everything under it.
+fn excludes(root: &Path, workspace: &toml::Value, out: &Path) -> bool {
+    workspace
+        .get("exclude")
+        .and_then(toml::Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(toml::Value::as_str)
+        .filter_map(|entry| fs::canonicalize(root.join(entry)).ok())
+        .any(|excluded| out.starts_with(excluded))
 }
 
 /// Copies the `Cargo.lock` of the repository into `out`, if it has none yet, so that Cargo can

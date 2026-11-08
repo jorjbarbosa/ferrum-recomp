@@ -93,9 +93,11 @@ cargo check
 
 [`docs/config.example.toml`](docs/config.example.toml) documents every key: functions the
 analysis misses, ranges to skip, jump table entry counts, `setjmp` and `longjmp`, functions the port
-replaces, and hooks at single instructions. Paths are relative to the config. The output may not
-lie inside another Cargo workspace, and gets a copy of this repository's `Cargo.lock`, so it builds
-with the same dependency versions.
+replaces, and hooks at single instructions. Paths are relative to the config. The output gets a
+copy of this repository's `Cargo.lock`, so it builds with the same dependency versions. It may lie
+inside another Cargo workspace, such as the port's, only if that workspace lists it under
+`exclude`: otherwise Cargo takes the generated crates for members of that workspace, and their
+build fails.
 
 `ferrum recomp` warns about what the config may need to fix: unresolved jump tables, paths that run
 off the end of a function, and function boundaries that look wrong.

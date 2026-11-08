@@ -127,16 +127,49 @@ fn recomp_writes_the_workspace_of_the_sample() {
 }
 
 #[test]
-fn recomp_refuses_an_output_inside_a_cargo_workspace() {
+fn recomp_writes_inside_a_cargo_workspace_only_if_it_excludes_the_output() {
     let dir = scratch("nested");
-    fs::write(dir.join("Cargo.toml"), "[workspace]\nmembers = []\n").unwrap();
-    let config = write_config(&dir, "out", "");
-    let output = recomp(&config, &[]);
-    assert!(!output.status.success());
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("lies inside the Cargo workspace"),
-        "{stderr}"
+    let refused = |workspace: &str, out: &str| {
+        fs::write(dir.join("Cargo.toml"), workspace).unwrap();
+        let output = recomp(&write_config(&dir, out, ""), &[]);
+        assert!(!output.status.success(), "{workspace}");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            stderr.contains("lies inside the Cargo workspace"),
+            "{stderr}"
+        );
+        assert!(stderr.contains("list it under `exclude`"), "{stderr}");
+    };
+    let accepted = |workspace: &str, out: &str| {
+        fs::write(dir.join("Cargo.toml"), workspace).unwrap();
+        let output = recomp(&write_config(&dir, out, ""), &[]);
+        assert!(
+            output.status.success(),
+            "{workspace}\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(dir.join(out).join("Cargo.toml").is_file(), "{workspace}");
+    };
+
+    refused("[workspace]\nmembers = []\n", "out");
+    // An entry that does not hold the output is no help: one that does not exist, a sibling, or
+    // a directory inside the output.
+    refused(
+        "[workspace]\nmembers = []\nexclude = [\"missing\"]\n",
+        "out",
+    );
+    fs::create_dir_all(dir.join("other")).unwrap();
+    refused("[workspace]\nmembers = []\nexclude = [\"other\"]\n", "out");
+    fs::create_dir_all(dir.join("out/inner")).unwrap();
+    refused(
+        "[workspace]\nmembers = []\nexclude = [\"out/inner\"]\n",
+        "out",
+    );
+    accepted("[workspace]\nmembers = []\nexclude = [\"out\"]\n", "out");
+    // An entry excludes everything under it, and may be written with a leading ./ or a trailing /.
+    accepted(
+        "[workspace]\nmembers = []\nexclude = [\"./generated/\"]\n",
+        "generated/sample-ppc",
     );
     fs::remove_dir_all(&dir).unwrap();
 }

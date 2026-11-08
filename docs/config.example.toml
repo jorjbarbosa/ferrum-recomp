@@ -10,7 +10,8 @@
 [main]
 # The XEX to recompile. Game files never go into the ferrum repository.
 xex = "game/default.xex"
-# The output workspace. It may not lie inside another Cargo workspace.
+# The output workspace. It may lie inside another Cargo workspace, such as the port's, only if
+# that workspace lists it under `exclude`.
 out = "game-ppc"
 # The root crate of the output; the functions go into crates `<crate_name>-NNN`.
 crate_name = "game-ppc"
