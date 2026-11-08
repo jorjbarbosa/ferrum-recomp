@@ -3,6 +3,9 @@
 
 //! What the tests of the CLI share: a synthetic XEX and scratch directories.
 
+// Each test crate that includes this module uses only part of it.
+#![allow(dead_code)]
+
 use std::fs;
 use std::path::PathBuf;
 
@@ -11,9 +14,14 @@ use ferrum_xex::fixtures::sample::{SampleLayout, THUNKS_OFFSET};
 /// The size of `.text` in the sample.
 const TEXT_SIZE: usize = 0x800;
 
+/// The address of `.text` in the sample.
+pub fn text() -> u32 {
+    SampleLayout::default().text()
+}
+
 /// A sample whose `.text` holds the given words at the given offsets, zero elsewhere apart from
-/// the import thunks, so that the sweep of the gaps finds nothing else.
-fn sample(code: &[(usize, &[u32])]) -> Vec<u8> {
+/// the import thunks (from `.text+0x400`), so that the sweep of the gaps finds nothing else.
+pub fn sample(code: &[(usize, &[u32])]) -> Vec<u8> {
     let layout = SampleLayout::default();
     let mut builder = layout.builder();
     let text = (layout.text() - layout.base) as usize;

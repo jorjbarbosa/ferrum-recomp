@@ -39,8 +39,9 @@ times are from one Windows desktop and only show the order of magnitude.
 3. **Analyze.** `ferrum-analysis` finds the functions: `.pdata`, the entry point and the exports,
    branch targets (second entries into a function included), pointers in data, a sweep of the gaps
    and the overrides of the config. It finds the functions that never return, splits each function
-   into basic blocks, recognizes the register save and restore routines, and resolves jump tables
-   by evaluating the instructions before each `bctr` on symbolic values.
+   into basic blocks, recognizes the register save and restore routines and the C runtime's
+   `setjmp` and `longjmp` by what they do, and resolves jump tables by evaluating the instructions
+   before each `bctr` on symbolic values.
 4. **Generate.** `ferrum-codegen` writes each function as a `loop` over a `match` on the guest
    program counter, one arm per basic block. An instruction becomes a few statements over the guest
    context, the memory and the helpers of `ferrum-runtime`. Calls to import thunks become calls to
@@ -115,8 +116,8 @@ runtime = "../../ferrum-recomp/crates/ferrum-runtime"
 ```
 
 [`docs/config.example.toml`](docs/config.example.toml) documents every key: functions the
-analysis misses, ranges to skip, jump table entry counts, `setjmp` and `longjmp`, functions the port
-replaces, and hooks at single instructions. Paths are relative to the config. The output gets a
+analysis misses, ranges to skip, jump table entry counts, `setjmp` and `longjmp` when the analysis
+cannot find them, functions the port replaces, and hooks at single instructions. Paths are relative to the config. The output gets a
 copy of this repository's `Cargo.lock`, so it builds with the same dependency versions. It may lie
 inside another Cargo workspace, such as the port's, only if that workspace lists it under
 `exclude`: otherwise Cargo takes the generated crates for members of that workspace, and their

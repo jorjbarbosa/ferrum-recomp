@@ -10,7 +10,9 @@ use std::ops::Range;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};
-use ferrum_analysis::{Code, Discovery, Function, Input, SaveRestore, discover, find_save_restore};
+use ferrum_analysis::{
+    Code, Discovery, Function, Input, SaveRestore, discover, find_non_local, find_save_restore,
+};
 use ferrum_codegen::{
     Error as CodegenError, Import, Layout, Library, NonLocal, OutputFile, Program, Statistics,
     write_workspace,
@@ -40,6 +42,20 @@ pub fn run(path: &Path, strict: bool) -> Result<()> {
     let code_ranges = code_ranges(image);
     let routines = routines(image, &code_ranges);
     let imports = imports(image, &mut warnings);
+    let found = find_non_local(&code, &code_ranges);
+    let setjmp = non_local("setjmp", config.setjmp, &found.setjmp, &mut warnings);
+    let longjmp = non_local("longjmp", config.longjmp, &found.longjmp, &mut warnings);
+    match (setjmp, longjmp) {
+        (Some(_), None) => warnings.push(
+            "setjmp is known but longjmp is not; give its address with [analysis] longjmp"
+                .to_owned(),
+        ),
+        (None, Some(_)) => warnings.push(
+            "longjmp is known but setjmp is not; give its address with [analysis] setjmp"
+                .to_owned(),
+        ),
+        _ => {}
+    }
     let mut skip = config.skip.clone();
     skip.extend(export_table(&xex, &code_ranges));
     let input = Input {
@@ -62,7 +78,7 @@ pub fn run(path: &Path, strict: bool) -> Result<()> {
         functions: config.functions.clone(),
         skip,
         table_entries: config.table_entries.clone(),
-        longjmp: config.longjmp,
+        longjmp: longjmp.map(|(addr, _)| addr),
     };
     let discovery = discover(&input).context("function discovery failed")?;
     warnings.extend(discovery.warnings.iter().map(ToString::to_string));
@@ -79,8 +95,8 @@ pub fn run(path: &Path, strict: bool) -> Result<()> {
     let program = Program::new(code, discovery.functions.iter().copied(), &routines)
         .with_rules(discovery.rules.clone())
         .with_non_local(NonLocal {
-            setjmp: config.setjmp,
-            longjmp: config.longjmp,
+            setjmp: setjmp.map(|(addr, _)| addr),
+            longjmp: longjmp.map(|(addr, _)| addr),
         })
         .with_imports(imports)
         .with_hooks(config.hooks.clone())
@@ -106,8 +122,73 @@ pub fn run(path: &Path, strict: bool) -> Result<()> {
     let written = write_workspace(&config.out, &files)
         .with_context(|| format!("cannot write {}", config.out.display()))?;
     copy_lock(&config.out)?;
-    print_summary(&discovery, &statistics, &files, written, &config.out);
+    let summary = Summary {
+        discovery: &discovery,
+        setjmp,
+        longjmp,
+        statistics: &statistics,
+        files: &files,
+        written,
+        out: &config.out,
+    };
+    summary.print();
     Ok(())
+}
+
+/// Where the address of `setjmp` or `longjmp` comes from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Origin {
+    /// `[analysis]` in the config.
+    Config,
+    /// The one routine of its shape that the analysis found.
+    Found,
+}
+
+/// The address of the routine `name`: the config's, or else the one candidate the analysis found
+/// in `found`. A config that disagrees with the analysis, and several candidates, are warnings;
+/// several candidates and no config give no address.
+fn non_local(
+    name: &str,
+    config: Option<u32>,
+    found: &[u32],
+    warnings: &mut Vec<String>,
+) -> Option<(u32, Origin)> {
+    let list = |addrs: &[u32]| {
+        addrs
+            .iter()
+            .map(|addr| format!("{addr:#010x}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    match (config, found) {
+        (Some(addr), _) => {
+            if !found.is_empty() && !found.contains(&addr) {
+                warnings.push(format!(
+                    "[analysis] {name} is {addr:#010x}, but the code has the shape of {name} at {}",
+                    list(found)
+                ));
+            }
+            Some((addr, Origin::Config))
+        }
+        (None, [addr]) => Some((*addr, Origin::Found)),
+        (None, []) => None,
+        (None, several) => {
+            warnings.push(format!(
+                "the code has the shape of {name} at {}; give the right one with [analysis] {name}",
+                list(several)
+            ));
+            None
+        }
+    }
+}
+
+/// How the summary names where an address of [`non_local`] comes from.
+fn origin(chosen: Option<(u32, Origin)>) -> String {
+    match chosen {
+        Some((addr, Origin::Config)) => format!("{addr:#010x} (config)"),
+        Some((addr, Origin::Found)) => format!("{addr:#010x} (found)"),
+        None => "none".to_owned(),
+    }
 }
 
 /// The repository this binary was built from.
@@ -302,40 +383,51 @@ fn print_opcodes(statistics: &Statistics) {
     }
 }
 
-fn print_summary(
-    discovery: &Discovery,
-    statistics: &Statistics,
-    files: &[OutputFile],
+/// What a run of `ferrum recomp` prints at the end.
+struct Summary<'a> {
+    discovery: &'a Discovery,
+    setjmp: Option<(u32, Origin)>,
+    longjmp: Option<(u32, Origin)>,
+    statistics: &'a Statistics,
+    files: &'a [OutputFile],
     written: usize,
-    out: &Path,
-) {
-    let mut sources: BTreeMap<String, usize> = BTreeMap::new();
-    for source in discovery.sources.values() {
-        *sources.entry(format!("{source:?}")).or_default() += 1;
+    out: &'a Path,
+}
+
+impl Summary<'_> {
+    fn print(&self) {
+        let mut sources: BTreeMap<String, usize> = BTreeMap::new();
+        for source in self.discovery.sources.values() {
+            *sources.entry(format!("{source:?}")).or_default() += 1;
+        }
+        let sources: Vec<String> = sources
+            .iter()
+            .map(|(source, count)| format!("{source} {count}"))
+            .collect();
+        println!(
+            "functions: {} ({})",
+            self.discovery.functions.len(),
+            sources.join(", ")
+        );
+        println!("never return: {}", self.discovery.rules.no_return.len());
+        println!("setjmp: {}", origin(self.setjmp));
+        println!("longjmp: {}", origin(self.longjmp));
+        println!(
+            "jump tables: {} resolved, {} unresolved",
+            self.statistics.jump_tables, self.statistics.unresolved_tables
+        );
+        print_opcodes(self.statistics);
+        let crates = self
+            .files
+            .iter()
+            .filter(|file| file.path.ends_with("/Cargo.toml"))
+            .count();
+        let out = std::path::absolute(self.out).unwrap_or_else(|_| self.out.to_path_buf());
+        println!(
+            "wrote {} of {} files, {crates} crates, to {}",
+            self.written,
+            self.files.len(),
+            out.display()
+        );
     }
-    let sources: Vec<String> = sources
-        .iter()
-        .map(|(source, count)| format!("{source} {count}"))
-        .collect();
-    println!(
-        "functions: {} ({})",
-        discovery.functions.len(),
-        sources.join(", ")
-    );
-    println!("never return: {}", discovery.rules.no_return.len());
-    println!(
-        "jump tables: {} resolved, {} unresolved",
-        statistics.jump_tables, statistics.unresolved_tables
-    );
-    print_opcodes(statistics);
-    let crates = files
-        .iter()
-        .filter(|file| file.path.ends_with("/Cargo.toml"))
-        .count();
-    let out = std::path::absolute(out).unwrap_or_else(|_| out.to_path_buf());
-    println!(
-        "wrote {written} of {} files, {crates} crates, to {}",
-        files.len(),
-        out.display()
-    );
 }

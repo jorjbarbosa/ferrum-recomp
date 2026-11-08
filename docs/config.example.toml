@@ -32,7 +32,9 @@ skip = [{ addr = 0x82050000, size = 0x40 }]
 # of entries of its table. Discovery warns of each unresolved table.
 jump_tables = [{ addr = 0x82010010, entries = 12 }]
 # The C runtime's setjmp and longjmp, if the game has them. Functions that call setjmp resume
-# after it when a longjmp unwinds to them.
+# after it when a longjmp unwinds to them. ferrum recomp finds both by what they do and prints
+# them in its summary; name them here only when it finds none or several, or finds a wrong one.
+# An address here wins over the one found, with a warning when they differ.
 setjmp = 0x82020000
 longjmp = 0x82020100
 
