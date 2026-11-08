@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[package]
+name = "ferrum-xex"
+description = "XEX2 parser that turns an Xbox 360 executable into an in-memory PE image"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+# The crate embeds the BSD 3-Clause ordinal tables under tables/xenia/.
+license = "(MIT OR Apache-2.0) AND BSD-3-Clause"
+
+[dependencies]
+aes.workspace = true
+cbc.workspace = true
+lzxd.workspace = true
+sha1.workspace = true
+thiserror.workspace = true
+
+[features]
+# Exposes the synthetic XEX builder to the tests of other crates. Never enabled in normal builds.
+fixtures = []

@@ -1,0 +1,81 @@
+Disassembly of section .text:
+
+00100000 <test_lvebx_1>:
+  100000:	7c 60 20 0e 	lvebx   v3,0,r4
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_lvebx_1_constant>:
+  100008:	3c 80 10 00 	lis     r4,4096
+  10000c:	60 84 10 00 	ori     r4,r4,4096
+  100010:	7c 60 20 0e 	lvebx   v3,0,r4
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_lvebx_2>:
+  100018:	7c 60 20 0e 	lvebx   v3,0,r4
+  10001c:	4e 80 00 20 	blr
+
+00100020 <test_lvebx_2_constant>:
+  100020:	3c 80 10 00 	lis     r4,4096
+  100024:	60 84 10 04 	ori     r4,r4,4100
+  100028:	7c 60 20 0e 	lvebx   v3,0,r4
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_lvehx_1>:
+  100030:	7c 60 20 4e 	lvehx   v3,0,r4
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_lvehx_1_constant>:
+  100038:	3c 80 10 00 	lis     r4,4096
+  10003c:	60 84 10 00 	ori     r4,r4,4096
+  100040:	7c 60 20 4e 	lvehx   v3,0,r4
+  100044:	4e 80 00 20 	blr
+
+00100048 <test_lvehx_2>:
+  100048:	7c 60 20 4e 	lvehx   v3,0,r4
+  10004c:	4e 80 00 20 	blr
+
+00100050 <test_lvehx_2_constant>:
+  100050:	3c 80 10 00 	lis     r4,4096
+  100054:	60 84 10 04 	ori     r4,r4,4100
+  100058:	7c 60 20 4e 	lvehx   v3,0,r4
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_lvewx_1>:
+  100060:	7c 60 20 8e 	lvewx   v3,0,r4
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_lvewx_1_constant>:
+  100068:	3c 80 10 00 	lis     r4,4096
+  10006c:	60 84 10 00 	ori     r4,r4,4096
+  100070:	7c 60 20 8e 	lvewx   v3,0,r4
+  100074:	4e 80 00 20 	blr
+
+00100078 <test_lvewx_2>:
+  100078:	7c 60 20 8e 	lvewx   v3,0,r4
+  10007c:	4e 80 00 20 	blr
+
+00100080 <test_lvewx_2_constant>:
+  100080:	3c 80 10 00 	lis     r4,4096
+  100084:	60 84 10 04 	ori     r4,r4,4100
+  100088:	7c 60 20 8e 	lvewx   v3,0,r4
+  10008c:	4e 80 00 20 	blr
+
+00100090 <test_lvewx128_1>:
+  100090:	10 60 20 83 	lvewx128 v3,r0,r4
+  100094:	4e 80 00 20 	blr
+
+00100098 <test_lvewx128_1_constant>:
+  100098:	3c 80 10 00 	lis     r4,4096
+  10009c:	60 84 10 00 	ori     r4,r4,4096
+  1000a0:	10 60 20 83 	lvewx128 v3,r0,r4
+  1000a4:	4e 80 00 20 	blr
+
+001000a8 <test_lvewx128_2>:
+  1000a8:	10 60 20 83 	lvewx128 v3,r0,r4
+  1000ac:	4e 80 00 20 	blr
+
+001000b0 <test_lvewx128_2_constant>:
+  1000b0:	3c 80 10 00 	lis     r4,4096
+  1000b4:	60 84 10 04 	ori     r4,r4,4100
+  1000b8:	10 60 20 83 	lvewx128 v3,r0,r4
+  1000bc:	4e 80 00 20 	blr

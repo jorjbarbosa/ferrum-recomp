@@ -1,0 +1,113 @@
+Disassembly of section .text:
+
+00100000 <test_vpkd3d128_d3dcolor_invalid_0>:
+  100000:	18 81 1e 10 	vpkd3d128 v4,v3,0,0,0
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_vpkd3d128_d3dcolor_invalid_1>:
+  100008:	18 81 1e 10 	vpkd3d128 v4,v3,0,0,0
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_vpkd3d128_d3dcolor_invalid_2>:
+  100010:	18 81 1e 10 	vpkd3d128 v4,v3,0,0,0
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_vpkd3d128_d3dcolor_1_0>:
+  100018:	18 81 1e 10 	vpkd3d128 v4,v3,0,0,0
+  10001c:	4e 80 00 20 	blr
+
+00100020 <test_vpkd3d128_d3dcolor_1_1>:
+  100020:	18 81 1e 50 	vpkd3d128 v4,v3,0,0,0
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_vpkd3d128_d3dcolor_1_2>:
+  100028:	18 81 1e 90 	vpkd3d128 v4,v3,0,0,2
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_vpkd3d128_d3dcolor_1_3>:
+  100030:	18 81 1e d0 	vpkd3d128 v4,v3,0,0,2
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_vpkd3d128_d3dcolor_2_0>:
+  100038:	18 82 1e 10 	vpkd3d128 v4,v3,0,2,0
+  10003c:	4e 80 00 20 	blr
+
+00100040 <test_vpkd3d128_d3dcolor_2_1>:
+  100040:	18 82 1e 50 	vpkd3d128 v4,v3,0,2,0
+  100044:	4e 80 00 20 	blr
+
+00100048 <test_vpkd3d128_d3dcolor_2_2>:
+  100048:	18 82 1e 90 	vpkd3d128 v4,v3,0,2,2
+  10004c:	4e 80 00 20 	blr
+
+00100050 <test_vpkd3d128_d3dcolor_2_3>:
+  100050:	18 82 1e d0 	vpkd3d128 v4,v3,0,2,2
+  100054:	4e 80 00 20 	blr
+
+00100058 <test_vpkd3d128_d3dcolor_3_0>:
+  100058:	18 83 1e 10 	vpkd3d128 v4,v3,0,2,0
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_vpkd3d128_d3dcolor_3_1>:
+  100060:	18 83 1e 50 	vpkd3d128 v4,v3,0,2,0
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_vpkd3d128_d3dcolor_3_2>:
+  100068:	18 83 1e 90 	vpkd3d128 v4,v3,0,2,2
+  10006c:	4e 80 00 20 	blr
+
+00100070 <test_vpkd3d128_d3dcolor_3_3>:
+  100070:	18 83 1e d0 	vpkd3d128 v4,v3,0,2,2
+  100074:	4e 80 00 20 	blr
+
+00100078 <test_vpkd3d128_short2_invalid_0>:
+  100078:	18 85 1e 10 	vpkd3d128 v4,v3,1,0,0
+  10007c:	4e 80 00 20 	blr
+
+00100080 <test_vpkd3d128_short2_invalid_1>:
+  100080:	18 85 1e 10 	vpkd3d128 v4,v3,1,0,0
+  100084:	4e 80 00 20 	blr
+
+00100088 <test_vpkd3d128_short2_0>:
+  100088:	18 85 1e 10 	vpkd3d128 v4,v3,1,0,0
+  10008c:	4e 80 00 20 	blr
+
+00100090 <test_vpkd3d128_short2_1>:
+  100090:	18 85 1e 10 	vpkd3d128 v4,v3,1,0,0
+  100094:	4e 80 00 20 	blr
+
+00100098 <test_vpkd3d128_short2_2>:
+  100098:	18 85 1e 10 	vpkd3d128 v4,v3,1,0,0
+  10009c:	4e 80 00 20 	blr
+
+001000a0 <test_vpkd3d128_short4_0>:
+  1000a0:	18 92 1e 10 	vpkd3d128 v4,v3,0,2,0
+  1000a4:	4e 80 00 20 	blr
+
+001000a8 <test_vpkd3d128_uint_2101010_0>:
+  1000a8:	18 89 1e 10 	vpkd3d128 v4,v3,2,0,0
+  1000ac:	4e 80 00 20 	blr
+
+001000b0 <test_vpkd3d128_uint_2101010_1>:
+  1000b0:	18 89 1e 10 	vpkd3d128 v4,v3,2,0,0
+  1000b4:	4e 80 00 20 	blr
+
+001000b8 <test_vpkd3d128_uint_2101010_2>:
+  1000b8:	18 89 1e 10 	vpkd3d128 v4,v3,2,0,0
+  1000bc:	4e 80 00 20 	blr
+
+001000c0 <test_vpkd3d128_float16_2_invalid_0>:
+  1000c0:	18 8d 1e 10 	vpkd3d128 v4,v3,3,0,0
+  1000c4:	4e 80 00 20 	blr
+
+001000c8 <test_vpkd3d128_float16_2_0>:
+  1000c8:	18 8d 1e 10 	vpkd3d128 v4,v3,3,0,0
+  1000cc:	4e 80 00 20 	blr
+
+001000d0 <test_vpkd3d128_float16_4_invalid_0>:
+  1000d0:	18 96 1e 10 	vpkd3d128 v4,v3,1,2,0
+  1000d4:	4e 80 00 20 	blr
+
+001000d8 <test_vpkd3d128_float16_4_0>:
+  1000d8:	18 96 1e 10 	vpkd3d128 v4,v3,1,2,0
+  1000dc:	4e 80 00 20 	blr

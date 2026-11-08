@@ -1,0 +1,10 @@
+Disassembly of section .text:
+
+00100000 <test_frsqrte_1>:
+  100000:	4e 80 00 20 	blr
+
+00100004 <test_frsqrte_2>:
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_frsqrte_3>:
+  100008:	4e 80 00 20 	blr

@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[package]
+name = "ferrum-runtime"
+description = "Minimal runtime for recompiled code: CPU context, memory, function table, kernel traits"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+# src/kernel/exports.in is derived from the BSD 3-Clause ordinal tables of ferrum-xex.
+license = "(MIT OR Apache-2.0) AND BSD-3-Clause"
+
+[features]
+# Validates every memory access against the regions the port registers, and panics on any other.
+# Slow: it is for diagnosis, not for normal builds.
+trace = []
+
+[dependencies]
+thiserror.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows-sys.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+libc.workspace = true
+
+[dev-dependencies]
+# Only for tests/kernel_exports.rs, which generates and checks src/kernel/exports.in.
+ferrum-xex.workspace = true

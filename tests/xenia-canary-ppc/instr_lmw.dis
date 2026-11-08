@@ -1,0 +1,9 @@
+Disassembly of section .text:
+
+00100000 <test_lmw_1>:
+  100000:	bb c4 00 00 	lmw     r30,0(r4)
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_lmw_2>:
+  100008:	bb a4 00 08 	lmw     r29,8(r4)
+  10000c:	4e 80 00 20 	blr

@@ -1,0 +1,10 @@
+00000000 t test_oris_1
+00000008 t test_oris_1_constant
+0000001c t test_oris_2
+00000024 t test_oris_2_constant
+00000030 t test_oris_3
+00000038 t test_oris_3_constant
+00000044 t test_oris_4
+0000004c t test_oris_4_constant
+00000064 t test_oris_5
+0000006c t test_oris_5_constant

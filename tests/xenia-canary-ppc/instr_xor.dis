@@ -1,0 +1,68 @@
+Disassembly of section .text:
+
+00100000 <test_xor_1>:
+  100000:	7c 83 2a 78 	xor     r3,r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_xor_1_constant>:
+  100008:	38 80 ff ff 	li      r4,-1
+  10000c:	38 a0 ff ff 	li      r5,-1
+  100010:	78 a5 00 20 	clrldi  r5,r5,32
+  100014:	78 a5 07 c6 	rldicr  r5,r5,32,31
+  100018:	7c 83 2a 78 	xor     r3,r4,r5
+  10001c:	4e 80 00 20 	blr
+
+00100020 <test_xor_2>:
+  100020:	7c 83 2a 78 	xor     r3,r4,r5
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_xor_2_constant>:
+  100028:	38 80 ff ff 	li      r4,-1
+  10002c:	78 84 f8 42 	rldicl  r4,r4,63,1
+  100030:	78 84 0f a4 	rldicr  r4,r4,1,62
+  100034:	38 a0 ff ff 	li      r5,-1
+  100038:	78 a5 f8 42 	rldicl  r5,r5,63,1
+  10003c:	7c 83 2a 78 	xor     r3,r4,r5
+  100040:	4e 80 00 20 	blr
+
+00100044 <test_xor_3>:
+  100044:	7c 83 2a 78 	xor     r3,r4,r5
+  100048:	4e 80 00 20 	blr
+
+0010004c <test_xor_3_constant>:
+  10004c:	38 80 00 00 	li      r4,0
+  100050:	38 a0 ff ff 	li      r5,-1
+  100054:	7c 83 2a 78 	xor     r3,r4,r5
+  100058:	4e 80 00 20 	blr
+
+0010005c <test_xor_4>:
+  10005c:	7c 83 2a 78 	xor     r3,r4,r5
+  100060:	4e 80 00 20 	blr
+
+00100064 <test_xor_4_constant>:
+  100064:	3c 80 12 34 	lis     r4,4660
+  100068:	60 84 56 78 	ori     r4,r4,22136
+  10006c:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100070:	64 84 9a bc 	oris    r4,r4,39612
+  100074:	60 84 de f0 	ori     r4,r4,57072
+  100078:	7c 85 23 78 	mr      r5,r4
+  10007c:	7c 83 2a 78 	xor     r3,r4,r5
+  100080:	4e 80 00 20 	blr
+
+00100084 <test_xor_5>:
+  100084:	7c 83 2a 78 	xor     r3,r4,r5
+  100088:	4e 80 00 20 	blr
+
+0010008c <test_xor_5_constant>:
+  10008c:	3c 80 ff 00 	lis     r4,-256
+  100090:	60 84 ff 00 	ori     r4,r4,65280
+  100094:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100098:	64 84 ff 00 	oris    r4,r4,65280
+  10009c:	60 84 ff 00 	ori     r4,r4,65280
+  1000a0:	3c a0 00 ff 	lis     r5,255
+  1000a4:	60 a5 00 ff 	ori     r5,r5,255
+  1000a8:	78 a5 07 c6 	rldicr  r5,r5,32,31
+  1000ac:	64 a5 00 ff 	oris    r5,r5,255
+  1000b0:	60 a5 00 ff 	ori     r5,r5,255
+  1000b4:	7c 83 2a 78 	xor     r3,r4,r5
+  1000b8:	4e 80 00 20 	blr

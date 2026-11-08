@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[package]
+name = "ferrum-scale"
+description = "Synthetic workload that measures cargo check over a generated output workspace"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+ferrum-analysis.workspace = true
+ferrum-codegen.workspace = true
+ferrum-decoder.workspace = true

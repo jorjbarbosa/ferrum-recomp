@@ -1,0 +1,52 @@
+Disassembly of section .text:
+
+00100000 <the_function>:
+  100000:	2f 03 00 03 	cmpwi   cr6,r3,3
+  100004:	41 81 00 44 	bgt     100048 <.case_3>
+  100008:	3d 60 00 00 	lis     r11,0
+  10000c:	39 6b 00 00 	addi    r11,r11,0
+  100010:	54 63 10 3a 	rlwinm  r3,r3,2,0,29
+  100014:	7c 6b 18 2e 	lwzx    r3,r11,r3
+  100018:	7c 69 03 a6 	mtctr   r3
+  10001c:	4e 80 04 20 	bctr
+
+00100020 <.the_table>:
+	...
+
+00100030 <.case_0>:
+  100030:	39 60 00 08 	li      r11,8
+  100034:	48 00 00 18 	b       10004c <.the_divide>
+
+00100038 <.case_1>:
+  100038:	39 60 00 10 	li      r11,16
+  10003c:	48 00 00 10 	b       10004c <.the_divide>
+
+00100040 <.case_2>:
+  100040:	39 60 00 18 	li      r11,24
+  100044:	48 00 00 08 	b       10004c <.the_divide>
+
+00100048 <.case_3>:
+  100048:	39 60 00 20 	li      r11,32
+
+0010004c <.the_divide>:
+  10004c:	7d 6b 07 b4 	extsw   r11,r11
+  100050:	08 cb 00 00 	tdllei  r11,0
+  100054:	7c 84 5b 92 	divdu   r4,r4,r11
+  100058:	4e 80 00 20 	blr
+
+0010005c <test_jumptable_constants>:
+  10005c:	7d 88 02 a6 	mflr    r12
+  100060:	38 60 00 00 	li      r3,0
+  100064:	38 80 04 00 	li      r4,1024
+  100068:	4b ff ff 99 	bl      100000 <the_function>
+  10006c:	38 60 00 01 	li      r3,1
+  100070:	38 80 04 00 	li      r4,1024
+  100074:	4b ff ff 8d 	bl      100000 <the_function>
+  100078:	38 60 00 02 	li      r3,2
+  10007c:	38 80 04 00 	li      r4,1024
+  100080:	4b ff ff 81 	bl      100000 <the_function>
+  100084:	38 60 00 03 	li      r3,3
+  100088:	38 80 04 00 	li      r4,1024
+  10008c:	4b ff ff 75 	bl      100000 <the_function>
+  100090:	7d 88 03 a6 	mtlr    r12
+  100094:	4e 80 00 20 	blr

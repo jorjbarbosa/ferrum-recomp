@@ -1,0 +1,13 @@
+Disassembly of section .text:
+
+00100000 <test_vmaddfp_1>:
+  100000:	10 64 21 2e 	vmaddfp v3,v4,v4,v4
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_vmaddfp_2>:
+  100008:	10 64 31 6e 	vmaddfp v3,v4,v5,v6
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_vmaddfp_3>:
+  100010:	10 64 31 6e 	vmaddfp v3,v4,v5,v6
+  100014:	4e 80 00 20 	blr

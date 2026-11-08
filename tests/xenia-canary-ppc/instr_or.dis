@@ -1,0 +1,69 @@
+Disassembly of section .text:
+
+00100000 <test_or_1>:
+  100000:	7c 83 2b 78 	or      r3,r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_or_1_constant>:
+  100008:	38 80 ff ff 	li      r4,-1
+  10000c:	78 84 00 20 	clrldi  r4,r4,32
+  100010:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100014:	38 a0 ff ff 	li      r5,-1
+  100018:	78 a5 00 20 	clrldi  r5,r5,32
+  10001c:	7c 83 2b 78 	or      r3,r4,r5
+  100020:	4e 80 00 20 	blr
+
+00100024 <test_or_2>:
+  100024:	7c 83 2b 78 	or      r3,r4,r5
+  100028:	4e 80 00 20 	blr
+
+0010002c <test_or_2_constant>:
+  10002c:	38 80 ff ff 	li      r4,-1
+  100030:	78 84 f8 42 	rldicl  r4,r4,63,1
+  100034:	78 84 0f a4 	rldicr  r4,r4,1,62
+  100038:	38 a0 ff ff 	li      r5,-1
+  10003c:	78 a5 f8 42 	rldicl  r5,r5,63,1
+  100040:	7c 83 2b 78 	or      r3,r4,r5
+  100044:	4e 80 00 20 	blr
+
+00100048 <test_or_3>:
+  100048:	7c 83 2b 78 	or      r3,r4,r5
+  10004c:	4e 80 00 20 	blr
+
+00100050 <test_or_3_constant>:
+  100050:	38 80 00 00 	li      r4,0
+  100054:	38 a0 ff ff 	li      r5,-1
+  100058:	7c 83 2b 78 	or      r3,r4,r5
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_or_4>:
+  100060:	7c 83 2b 78 	or      r3,r4,r5
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_or_4_constant>:
+  100068:	3c 80 12 34 	lis     r4,4660
+  10006c:	60 84 56 78 	ori     r4,r4,22136
+  100070:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100074:	64 84 9a bc 	oris    r4,r4,39612
+  100078:	60 84 de f0 	ori     r4,r4,57072
+  10007c:	38 a0 00 00 	li      r5,0
+  100080:	7c 83 2b 78 	or      r3,r4,r5
+  100084:	4e 80 00 20 	blr
+
+00100088 <test_or_5>:
+  100088:	7c 83 2b 78 	or      r3,r4,r5
+  10008c:	4e 80 00 20 	blr
+
+00100090 <test_or_5_constant>:
+  100090:	3c 80 ff 00 	lis     r4,-256
+  100094:	60 84 ff 00 	ori     r4,r4,65280
+  100098:	78 84 07 c6 	rldicr  r4,r4,32,31
+  10009c:	64 84 ff 00 	oris    r4,r4,65280
+  1000a0:	60 84 ff 00 	ori     r4,r4,65280
+  1000a4:	3c a0 00 ff 	lis     r5,255
+  1000a8:	60 a5 00 ff 	ori     r5,r5,255
+  1000ac:	78 a5 07 c6 	rldicr  r5,r5,32,31
+  1000b0:	64 a5 00 ff 	oris    r5,r5,255
+  1000b4:	60 a5 00 ff 	ori     r5,r5,255
+  1000b8:	7c 83 2b 78 	or      r3,r4,r5
+  1000bc:	4e 80 00 20 	blr

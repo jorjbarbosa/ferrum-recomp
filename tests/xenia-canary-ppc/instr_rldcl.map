@@ -1,0 +1,10 @@
+00000000 t test_rldcl_1
+00000008 t test_rldcl_1_constant
+00000030 t test_rldcl_2
+00000038 t test_rldcl_2_constant
+00000060 t test_rldcl_3
+00000068 t test_rldcl_3_constant
+00000090 t test_rldcl_4
+00000098 t test_rldcl_4_constant
+000000c0 t test_rldcl_5
+000000c8 t test_rldcl_5_constant

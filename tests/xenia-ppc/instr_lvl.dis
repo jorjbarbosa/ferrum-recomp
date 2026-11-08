@@ -1,0 +1,11 @@
+Disassembly of section .text:
+
+00100000 <test_lvl_1>:
+  100000:	7c 64 04 0e 	lvlx    v3,r4,r0
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_lvl_1_constant>:
+  100008:	3c 80 10 00 	lis     r4,4096
+  10000c:	60 84 10 77 	ori     r4,r4,4215
+  100010:	7c 64 04 0e 	lvlx    v3,r4,r0
+  100014:	4e 80 00 20 	blr

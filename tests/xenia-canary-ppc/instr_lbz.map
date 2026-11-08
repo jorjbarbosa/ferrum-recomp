@@ -1,0 +1,6 @@
+00000000 t test_lbz_1
+00000008 t test_lbz_offset
+00000010 t test_lbzu_1
+00000018 t test_lbzx_1
+00000020 t test_lbzux_1
+00000028 t test_lbz_max

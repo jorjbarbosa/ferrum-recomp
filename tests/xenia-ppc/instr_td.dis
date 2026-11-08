@@ -1,0 +1,321 @@
+Disassembly of section .text:
+
+00100000 <test_tdlt_1>:
+  100000:	7e 03 20 88 	tdlt    r3,r4
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_tdlt_1_constant>:
+  100008:	38 60 00 18 	li      r3,24
+  10000c:	38 80 00 10 	li      r4,16
+  100010:	7e 03 20 88 	tdlt    r3,r4
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_tdlt_2>:
+  100018:	7e 03 20 88 	tdlt    r3,r4
+  10001c:	4e 80 00 20 	blr
+
+00100020 <test_tdlt_2_constant>:
+  100020:	38 60 00 18 	li      r3,24
+  100024:	38 80 00 00 	li      r4,0
+  100028:	7e 03 20 88 	tdlt    r3,r4
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_tdle_1>:
+  100030:	7e 83 20 88 	tdle    r3,r4
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_tdle_1_constant>:
+  100038:	38 60 00 18 	li      r3,24
+  10003c:	38 80 00 10 	li      r4,16
+  100040:	7e 83 20 88 	tdle    r3,r4
+  100044:	4e 80 00 20 	blr
+
+00100048 <test_tdle_2>:
+  100048:	7e 83 20 88 	tdle    r3,r4
+  10004c:	4e 80 00 20 	blr
+
+00100050 <test_tdle_2_constant>:
+  100050:	38 60 00 18 	li      r3,24
+  100054:	38 80 00 00 	li      r4,0
+  100058:	7e 83 20 88 	tdle    r3,r4
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_tdeq_1>:
+  100060:	7c 83 20 88 	tdeq    r3,r4
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_tdeq_1_constant>:
+  100068:	38 60 00 00 	li      r3,0
+  10006c:	38 80 00 18 	li      r4,24
+  100070:	7c 83 20 88 	tdeq    r3,r4
+  100074:	4e 80 00 20 	blr
+
+00100078 <test_tdeq_2>:
+  100078:	7c 83 20 88 	tdeq    r3,r4
+  10007c:	4e 80 00 20 	blr
+
+00100080 <test_tdeq_2_constant>:
+  100080:	38 60 00 18 	li      r3,24
+  100084:	38 80 00 00 	li      r4,0
+  100088:	7c 83 20 88 	tdeq    r3,r4
+  10008c:	4e 80 00 20 	blr
+
+00100090 <test_tdge_1>:
+  100090:	7d 83 20 88 	tdge    r3,r4
+  100094:	4e 80 00 20 	blr
+
+00100098 <test_tdge_1_constant>:
+  100098:	38 60 00 18 	li      r3,24
+  10009c:	38 80 00 30 	li      r4,48
+  1000a0:	7d 83 20 88 	tdge    r3,r4
+  1000a4:	4e 80 00 20 	blr
+
+001000a8 <test_tdge_2>:
+  1000a8:	7d 83 20 88 	tdge    r3,r4
+  1000ac:	4e 80 00 20 	blr
+
+001000b0 <test_tdge_2_constant>:
+  1000b0:	38 60 00 00 	li      r3,0
+  1000b4:	38 80 00 30 	li      r4,48
+  1000b8:	7d 83 20 88 	tdge    r3,r4
+  1000bc:	4e 80 00 20 	blr
+
+001000c0 <test_tdge_3>:
+  1000c0:	7d 83 20 88 	tdge    r3,r4
+  1000c4:	4e 80 00 20 	blr
+
+001000c8 <test_tdge_3_constant>:
+  1000c8:	38 60 ff ff 	li      r3,-1
+  1000cc:	38 80 00 00 	li      r4,0
+  1000d0:	7d 83 20 88 	tdge    r3,r4
+  1000d4:	4e 80 00 20 	blr
+
+001000d8 <test_tdgt_1>:
+  1000d8:	7d 03 20 88 	tdgt    r3,r4
+  1000dc:	4e 80 00 20 	blr
+
+001000e0 <test_tdgt_1_constant>:
+  1000e0:	38 60 00 18 	li      r3,24
+  1000e4:	38 80 00 30 	li      r4,48
+  1000e8:	7d 03 20 88 	tdgt    r3,r4
+  1000ec:	4e 80 00 20 	blr
+
+001000f0 <test_tdgt_2>:
+  1000f0:	7d 03 20 88 	tdgt    r3,r4
+  1000f4:	4e 80 00 20 	blr
+
+001000f8 <test_tdgt_2_constant>:
+  1000f8:	38 60 00 00 	li      r3,0
+  1000fc:	38 80 00 30 	li      r4,48
+  100100:	7d 03 20 88 	tdgt    r3,r4
+  100104:	4e 80 00 20 	blr
+
+00100108 <test_tdgt_3>:
+  100108:	7d 03 20 88 	tdgt    r3,r4
+  10010c:	4e 80 00 20 	blr
+
+00100110 <test_tdgt_3_constant>:
+  100110:	38 60 ff ff 	li      r3,-1
+  100114:	38 80 00 00 	li      r4,0
+  100118:	7d 03 20 88 	tdgt    r3,r4
+  10011c:	4e 80 00 20 	blr
+
+00100120 <test_tdnl_1>:
+  100120:	7d 83 20 88 	tdge    r3,r4
+  100124:	4e 80 00 20 	blr
+
+00100128 <test_tdnl_1_constant>:
+  100128:	38 60 00 18 	li      r3,24
+  10012c:	38 80 00 30 	li      r4,48
+  100130:	7d 83 20 88 	tdge    r3,r4
+  100134:	4e 80 00 20 	blr
+
+00100138 <test_tdnl_2>:
+  100138:	7d 83 20 88 	tdge    r3,r4
+  10013c:	4e 80 00 20 	blr
+
+00100140 <test_tdnl_2_constant>:
+  100140:	38 60 00 00 	li      r3,0
+  100144:	38 80 00 30 	li      r4,48
+  100148:	7d 83 20 88 	tdge    r3,r4
+  10014c:	4e 80 00 20 	blr
+
+00100150 <test_tdnl_3>:
+  100150:	7d 83 20 88 	tdge    r3,r4
+  100154:	4e 80 00 20 	blr
+
+00100158 <test_tdnl_3_constant>:
+  100158:	38 60 ff ff 	li      r3,-1
+  10015c:	38 80 00 00 	li      r4,0
+  100160:	7d 83 20 88 	tdge    r3,r4
+  100164:	4e 80 00 20 	blr
+
+00100168 <test_tdne_1>:
+  100168:	7f 03 20 88 	tdne    r3,r4
+  10016c:	4e 80 00 20 	blr
+
+00100170 <test_tdne_1_constant>:
+  100170:	38 60 00 18 	li      r3,24
+  100174:	38 80 00 18 	li      r4,24
+  100178:	7f 03 20 88 	tdne    r3,r4
+  10017c:	4e 80 00 20 	blr
+
+00100180 <test_tdne_2>:
+  100180:	7f 03 20 88 	tdne    r3,r4
+  100184:	4e 80 00 20 	blr
+
+00100188 <test_tdne_2_constant>:
+  100188:	38 60 00 00 	li      r3,0
+  10018c:	38 80 00 00 	li      r4,0
+  100190:	7f 03 20 88 	tdne    r3,r4
+  100194:	4e 80 00 20 	blr
+
+00100198 <test_tdng_1>:
+  100198:	7e 83 20 88 	tdle    r3,r4
+  10019c:	4e 80 00 20 	blr
+
+001001a0 <test_tdng_1_constant>:
+  1001a0:	38 60 00 18 	li      r3,24
+  1001a4:	38 80 00 10 	li      r4,16
+  1001a8:	7e 83 20 88 	tdle    r3,r4
+  1001ac:	4e 80 00 20 	blr
+
+001001b0 <test_tdng_2>:
+  1001b0:	7e 83 20 88 	tdle    r3,r4
+  1001b4:	4e 80 00 20 	blr
+
+001001b8 <test_tdng_2_constant>:
+  1001b8:	38 60 00 18 	li      r3,24
+  1001bc:	38 80 00 00 	li      r4,0
+  1001c0:	7e 83 20 88 	tdle    r3,r4
+  1001c4:	4e 80 00 20 	blr
+
+001001c8 <test_tdng_3>:
+  1001c8:	7e 83 20 88 	tdle    r3,r4
+  1001cc:	4e 80 00 20 	blr
+
+001001d0 <test_tdng_3_constant>:
+  1001d0:	38 60 00 00 	li      r3,0
+  1001d4:	38 80 ff ff 	li      r4,-1
+  1001d8:	7e 83 20 88 	tdle    r3,r4
+  1001dc:	4e 80 00 20 	blr
+
+001001e0 <test_tdllt_1>:
+  1001e0:	7c 43 20 88 	tdllt   r3,r4
+  1001e4:	4e 80 00 20 	blr
+
+001001e8 <test_tdllt_1_constant>:
+  1001e8:	38 60 00 18 	li      r3,24
+  1001ec:	38 80 00 10 	li      r4,16
+  1001f0:	7c 43 20 88 	tdllt   r3,r4
+  1001f4:	4e 80 00 20 	blr
+
+001001f8 <test_tdllt_2>:
+  1001f8:	7c 43 20 88 	tdllt   r3,r4
+  1001fc:	4e 80 00 20 	blr
+
+00100200 <test_tdllt_2_constant>:
+  100200:	38 60 00 18 	li      r3,24
+  100204:	38 80 00 00 	li      r4,0
+  100208:	7c 43 20 88 	tdllt   r3,r4
+  10020c:	4e 80 00 20 	blr
+
+00100210 <test_tdlle_1>:
+  100210:	7c c3 20 88 	tdlle   r3,r4
+  100214:	4e 80 00 20 	blr
+
+00100218 <test_tdlle_1_constant>:
+  100218:	38 60 00 18 	li      r3,24
+  10021c:	38 80 00 10 	li      r4,16
+  100220:	7c c3 20 88 	tdlle   r3,r4
+  100224:	4e 80 00 20 	blr
+
+00100228 <test_tdlle_2>:
+  100228:	7c c3 20 88 	tdlle   r3,r4
+  10022c:	4e 80 00 20 	blr
+
+00100230 <test_tdlle_2_constant>:
+  100230:	38 60 00 18 	li      r3,24
+  100234:	38 80 00 00 	li      r4,0
+  100238:	7c c3 20 88 	tdlle   r3,r4
+  10023c:	4e 80 00 20 	blr
+
+00100240 <test_tdlge_1>:
+  100240:	7c a3 20 88 	tdlge   r3,r4
+  100244:	4e 80 00 20 	blr
+
+00100248 <test_tdlge_1_constant>:
+  100248:	38 60 00 18 	li      r3,24
+  10024c:	38 80 00 30 	li      r4,48
+  100250:	7c a3 20 88 	tdlge   r3,r4
+  100254:	4e 80 00 20 	blr
+
+00100258 <test_tdlge_2>:
+  100258:	7c a3 20 88 	tdlge   r3,r4
+  10025c:	4e 80 00 20 	blr
+
+00100260 <test_tdlge_2_constant>:
+  100260:	38 60 00 00 	li      r3,0
+  100264:	38 80 00 30 	li      r4,48
+  100268:	7c a3 20 88 	tdlge   r3,r4
+  10026c:	4e 80 00 20 	blr
+
+00100270 <test_tdlgt_1>:
+  100270:	7c 23 20 88 	tdlgt   r3,r4
+  100274:	4e 80 00 20 	blr
+
+00100278 <test_tdlgt_1_constant>:
+  100278:	38 60 00 18 	li      r3,24
+  10027c:	38 80 00 30 	li      r4,48
+  100280:	7c 23 20 88 	tdlgt   r3,r4
+  100284:	4e 80 00 20 	blr
+
+00100288 <test_tdlgt_2>:
+  100288:	7c 23 20 88 	tdlgt   r3,r4
+  10028c:	4e 80 00 20 	blr
+
+00100290 <test_tdlgt_2_constant>:
+  100290:	38 60 00 00 	li      r3,0
+  100294:	38 80 00 30 	li      r4,48
+  100298:	7c 23 20 88 	tdlgt   r3,r4
+  10029c:	4e 80 00 20 	blr
+
+001002a0 <test_tdlnl_1>:
+  1002a0:	7c a3 20 88 	tdlge   r3,r4
+  1002a4:	4e 80 00 20 	blr
+
+001002a8 <test_tdlnl_1_constant>:
+  1002a8:	38 60 00 18 	li      r3,24
+  1002ac:	38 80 00 30 	li      r4,48
+  1002b0:	7c a3 20 88 	tdlge   r3,r4
+  1002b4:	4e 80 00 20 	blr
+
+001002b8 <test_tdlnl_2>:
+  1002b8:	7c a3 20 88 	tdlge   r3,r4
+  1002bc:	4e 80 00 20 	blr
+
+001002c0 <test_tdlnl_2_constant>:
+  1002c0:	38 60 00 00 	li      r3,0
+  1002c4:	38 80 00 30 	li      r4,48
+  1002c8:	7c a3 20 88 	tdlge   r3,r4
+  1002cc:	4e 80 00 20 	blr
+
+001002d0 <test_tdlng_1>:
+  1002d0:	7c c3 20 88 	tdlle   r3,r4
+  1002d4:	4e 80 00 20 	blr
+
+001002d8 <test_tdlng_1_constant>:
+  1002d8:	38 60 00 18 	li      r3,24
+  1002dc:	38 80 00 10 	li      r4,16
+  1002e0:	7c c3 20 88 	tdlle   r3,r4
+  1002e4:	4e 80 00 20 	blr
+
+001002e8 <test_tdlng_2>:
+  1002e8:	7c c3 20 88 	tdlle   r3,r4
+  1002ec:	4e 80 00 20 	blr
+
+001002f0 <test_tdlng_2_constant>:
+  1002f0:	38 60 00 18 	li      r3,24
+  1002f4:	38 80 00 00 	li      r4,0
+  1002f8:	7c c3 20 88 	tdlle   r3,r4
+  1002fc:	4e 80 00 20 	blr

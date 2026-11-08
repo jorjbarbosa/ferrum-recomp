@@ -1,0 +1,29 @@
+Disassembly of section .text:
+
+00100000 <test_equiv_1>:
+  100000:	3d 20 9e 2a 	lis     r9,-25046
+  100004:	61 3e 83 c1 	ori     r30,r9,33729
+  100008:	7d 0b f0 50 	subf    r8,r11,r30
+  10000c:	30 e8 ff ff 	addic   r7,r8,-1
+  100010:	7f a7 41 11 	subfe.  r29,r7,r8
+  100014:	41 82 00 0c 	beq     100020 <equiv_1_good>
+  100018:	39 80 00 00 	li      r12,0
+  10001c:	4e 80 00 20 	blr
+
+00100020 <equiv_1_good>:
+  100020:	39 80 00 01 	li      r12,1
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_equiv_2>:
+  100028:	3d 20 9e 2a 	lis     r9,-25046
+  10002c:	61 3e 83 c1 	ori     r30,r9,33729
+  100030:	7d 0b f0 50 	subf    r8,r11,r30
+  100034:	30 e8 ff ff 	addic   r7,r8,-1
+  100038:	7f a7 41 11 	subfe.  r29,r7,r8
+  10003c:	41 82 00 0c 	beq     100048 <equiv_2_good>
+  100040:	39 80 00 00 	li      r12,0
+  100044:	4e 80 00 20 	blr
+
+00100048 <equiv_2_good>:
+  100048:	39 80 00 01 	li      r12,1
+  10004c:	4e 80 00 20 	blr

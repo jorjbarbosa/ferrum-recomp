@@ -1,0 +1,61 @@
+Disassembly of section .text:
+
+00100000 <test_addic_1>:
+  100000:	30 84 00 01 	addic   r4,r4,1
+  100004:	7c c0 01 14 	adde    r6,r0,r0
+  100008:	4e 80 00 20 	blr
+
+0010000c <test_addic_1_constant>:
+  10000c:	38 80 00 01 	li      r4,1
+  100010:	30 84 00 01 	addic   r4,r4,1
+  100014:	7c c0 01 14 	adde    r6,r0,r0
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_addic_2>:
+  10001c:	30 84 00 01 	addic   r4,r4,1
+  100020:	7c c0 01 14 	adde    r6,r0,r0
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_addic_2_constant>:
+  100028:	38 80 ff ff 	li      r4,-1
+  10002c:	30 84 00 01 	addic   r4,r4,1
+  100030:	7c c0 01 14 	adde    r6,r0,r0
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_addic_3>:
+  100038:	30 84 00 01 	addic   r4,r4,1
+  10003c:	7c c0 01 14 	adde    r6,r0,r0
+  100040:	4e 80 00 20 	blr
+
+00100044 <test_addic_3_constant>:
+  100044:	38 80 ff ff 	li      r4,-1
+  100048:	54 84 00 3e 	rotlwi  r4,r4,0
+  10004c:	30 84 00 01 	addic   r4,r4,1
+  100050:	7c c0 01 14 	adde    r6,r0,r0
+  100054:	4e 80 00 20 	blr
+
+00100058 <test_addic_cr_1>:
+  100058:	34 84 00 01 	addic.  r4,r4,1
+  10005c:	7c c0 01 14 	adde    r6,r0,r0
+  100060:	7d 80 00 26 	mfcr    r12
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_addic_cr_1_constant>:
+  100068:	38 80 00 01 	li      r4,1
+  10006c:	34 84 00 01 	addic.  r4,r4,1
+  100070:	7c c0 01 14 	adde    r6,r0,r0
+  100074:	7d 80 00 26 	mfcr    r12
+  100078:	4e 80 00 20 	blr
+
+0010007c <test_addic_cr_2>:
+  10007c:	34 84 00 01 	addic.  r4,r4,1
+  100080:	7c c0 01 14 	adde    r6,r0,r0
+  100084:	7d 80 00 26 	mfcr    r12
+  100088:	4e 80 00 20 	blr
+
+0010008c <test_addic_cr_2_constant>:
+  10008c:	38 80 ff ff 	li      r4,-1
+  100090:	34 84 00 01 	addic.  r4,r4,1
+  100094:	7c c0 01 14 	adde    r6,r0,r0
+  100098:	7d 80 00 26 	mfcr    r12
+  10009c:	4e 80 00 20 	blr

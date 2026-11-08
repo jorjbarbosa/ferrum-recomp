@@ -1,0 +1,72 @@
+Disassembly of section .text:
+
+00100000 <test_rldimi_1>:
+  100000:	78 83 00 0c 	rldimi  r3,r4,0,0
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_rldimi_1_constant>:
+  100008:	38 60 ff ff 	li      r3,-1
+  10000c:	3c 80 01 23 	lis     r4,291
+  100010:	60 84 45 67 	ori     r4,r4,17767
+  100014:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100018:	3c 60 89 ab 	lis     r3,-30293
+  10001c:	60 63 cd ef 	ori     r3,r3,52719
+  100020:	78 63 00 20 	clrldi  r3,r3,32
+  100024:	7c 84 1b 78 	or      r4,r4,r3
+  100028:	78 83 00 0c 	rldimi  r3,r4,0,0
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_rldimi_2>:
+  100030:	78 83 44 2c 	rldimi  r3,r4,8,48
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_rldimi_2_constant>:
+  100038:	38 60 00 00 	li      r3,0
+  10003c:	3c 80 01 23 	lis     r4,291
+  100040:	60 84 45 67 	ori     r4,r4,17767
+  100044:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100048:	3c 60 89 ab 	lis     r3,-30293
+  10004c:	60 63 cd ef 	ori     r3,r3,52719
+  100050:	78 63 00 20 	clrldi  r3,r3,32
+  100054:	7c 84 1b 78 	or      r4,r4,r3
+  100058:	78 83 44 2c 	rldimi  r3,r4,8,48
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_rldimi_3>:
+  100060:	78 83 00 2e 	rldimi  r3,r4,32,32
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_rldimi_3_constant>:
+  100068:	38 60 ff ff 	li      r3,-1
+  10006c:	3c 80 01 23 	lis     r4,291
+  100070:	60 84 45 67 	ori     r4,r4,17767
+  100074:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100078:	3c 60 89 ab 	lis     r3,-30293
+  10007c:	60 63 cd ef 	ori     r3,r3,52719
+  100080:	78 63 00 20 	clrldi  r3,r3,32
+  100084:	7c 84 1b 78 	or      r4,r4,r3
+  100088:	78 83 00 2e 	rldimi  r3,r4,32,32
+  10008c:	4e 80 00 20 	blr
+
+00100090 <test_rldimi_4>:
+  100090:	78 83 80 2c 	rldimi  r3,r4,16,32
+  100094:	4e 80 00 20 	blr
+
+00100098 <test_rldimi_4_constant>:
+  100098:	38 60 ff ff 	li      r3,-1
+  10009c:	78 63 f8 42 	rldicl  r3,r3,63,1
+  1000a0:	78 63 0f a4 	rldicr  r3,r3,1,62
+  1000a4:	38 80 ff ff 	li      r4,-1
+  1000a8:	78 84 00 20 	clrldi  r4,r4,32
+  1000ac:	78 83 80 2c 	rldimi  r3,r4,16,32
+  1000b0:	4e 80 00 20 	blr
+
+001000b4 <test_rldimi_5>:
+  1000b4:	78 83 c0 0e 	rldimi  r3,r4,56,0
+  1000b8:	4e 80 00 20 	blr
+
+001000bc <test_rldimi_5_constant>:
+  1000bc:	38 60 00 00 	li      r3,0
+  1000c0:	38 80 ff ff 	li      r4,-1
+  1000c4:	78 83 c0 0e 	rldimi  r3,r4,56,0
+  1000c8:	4e 80 00 20 	blr

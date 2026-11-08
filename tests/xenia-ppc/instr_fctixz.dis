@@ -1,0 +1,81 @@
+Disassembly of section .text:
+
+00100000 <test_fctiwz_1>:
+  100000:	fc 20 00 1e 	fctiwz  f1,f0
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_fctiwz_2>:
+  100008:	fc 20 00 1e 	fctiwz  f1,f0
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_fctiwz_3>:
+  100010:	fc 20 00 1e 	fctiwz  f1,f0
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_fctiwz_4>:
+  100018:	fc 20 00 1e 	fctiwz  f1,f0
+  10001c:	4e 80 00 20 	blr
+
+00100020 <test_fctiwz_5>:
+  100020:	fc 20 00 1e 	fctiwz  f1,f0
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_fctiwz_6>:
+  100028:	fc 20 00 1e 	fctiwz  f1,f0
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_fctiwz_7>:
+  100030:	fc 20 00 1e 	fctiwz  f1,f0
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_fctiwz_8>:
+  100038:	fc 20 00 1e 	fctiwz  f1,f0
+  10003c:	4e 80 00 20 	blr
+
+00100040 <test_fctiwz_9>:
+  100040:	fc 20 00 1e 	fctiwz  f1,f0
+  100044:	4e 80 00 20 	blr
+
+00100048 <test_fctiwz_10>:
+  100048:	fc 20 00 1e 	fctiwz  f1,f0
+  10004c:	4e 80 00 20 	blr
+
+00100050 <test_fctidz_1>:
+  100050:	fc 20 06 5e 	fctidz  f1,f0
+  100054:	4e 80 00 20 	blr
+
+00100058 <test_fctidz_2>:
+  100058:	fc 20 06 5e 	fctidz  f1,f0
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_fctidz_3>:
+  100060:	fc 20 06 5e 	fctidz  f1,f0
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_fctidz_4>:
+  100068:	fc 20 06 5e 	fctidz  f1,f0
+  10006c:	4e 80 00 20 	blr
+
+00100070 <test_fctidz_5>:
+  100070:	fc 20 06 5e 	fctidz  f1,f0
+  100074:	4e 80 00 20 	blr
+
+00100078 <test_fctidz_6>:
+  100078:	fc 20 06 5e 	fctidz  f1,f0
+  10007c:	4e 80 00 20 	blr
+
+00100080 <test_fctidz_7>:
+  100080:	fc 20 06 5e 	fctidz  f1,f0
+  100084:	4e 80 00 20 	blr
+
+00100088 <test_fctidz_8>:
+  100088:	fc 20 06 5e 	fctidz  f1,f0
+  10008c:	4e 80 00 20 	blr
+
+00100090 <test_fctidz_9>:
+  100090:	fc 20 06 5e 	fctidz  f1,f0
+  100094:	4e 80 00 20 	blr
+
+00100098 <test_fctidz_10>:
+  100098:	fc 20 06 5e 	fctidz  f1,f0
+  10009c:	4e 80 00 20 	blr

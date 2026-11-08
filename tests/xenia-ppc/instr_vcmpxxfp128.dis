@@ -1,0 +1,31 @@
+Disassembly of section .text:
+
+00100000 <test_vcmpxxfp128_1>:
+  100000:	18 64 28 40 	vcmpeqfp128. v3,v4,v5
+  100004:	7c 70 20 26 	mfocrf  r3,2
+  100008:	4e 80 00 20 	blr
+
+0010000c <test_vcmpxxfp128_2>:
+  10000c:	18 64 28 40 	vcmpeqfp128. v3,v4,v5
+  100010:	7c 70 20 26 	mfocrf  r3,2
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_vcmpxxfp128_3>:
+  100018:	18 64 28 40 	vcmpeqfp128. v3,v4,v5
+  10001c:	7c 70 20 26 	mfocrf  r3,2
+  100020:	4e 80 00 20 	blr
+
+00100024 <test_vcmpbfp128_1>:
+  100024:	18 64 29 c0 	vcmpbfp128. v3,v4,v5
+  100028:	7c 70 20 26 	mfocrf  r3,2
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_vcmpbfp128_2>:
+  100030:	18 64 29 c0 	vcmpbfp128. v3,v4,v5
+  100034:	7c 70 20 26 	mfocrf  r3,2
+  100038:	4e 80 00 20 	blr
+
+0010003c <test_vcmpbfp128_3>:
+  10003c:	18 64 29 c0 	vcmpbfp128. v3,v4,v5
+  100040:	7c 70 20 26 	mfocrf  r3,2
+  100044:	4e 80 00 20 	blr

@@ -1,0 +1,57 @@
+Disassembly of section .text:
+
+00100000 <test_oris_1>:
+  100000:	64 83 fe dc 	oris    r3,r4,65244
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_oris_1_constant>:
+  100008:	3c 80 de ad 	lis     r4,-8531
+  10000c:	60 84 be ef 	ori     r4,r4,48879
+  100010:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100014:	64 83 fe dc 	oris    r3,r4,65244
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_oris_2>:
+  10001c:	64 83 ff ff 	oris    r3,r4,65535
+  100020:	4e 80 00 20 	blr
+
+00100024 <test_oris_2_constant>:
+  100024:	38 80 ff ff 	li      r4,-1
+  100028:	64 83 ff ff 	oris    r3,r4,65535
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_oris_3>:
+  100030:	64 83 ff ff 	oris    r3,r4,65535
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_oris_3_constant>:
+  100038:	38 80 00 00 	li      r4,0
+  10003c:	64 83 ff ff 	oris    r3,r4,65535
+  100040:	4e 80 00 20 	blr
+
+00100044 <test_oris_4>:
+  100044:	64 83 00 00 	oris    r3,r4,0
+  100048:	4e 80 00 20 	blr
+
+0010004c <test_oris_4_constant>:
+  10004c:	3c 80 12 34 	lis     r4,4660
+  100050:	60 84 56 78 	ori     r4,r4,22136
+  100054:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100058:	64 84 9a bc 	oris    r4,r4,39612
+  10005c:	64 83 00 00 	oris    r3,r4,0
+  100060:	4e 80 00 20 	blr
+
+00100064 <test_oris_5>:
+  100064:	64 83 55 55 	oris    r3,r4,21845
+  100068:	4e 80 00 20 	blr
+
+0010006c <test_oris_5_constant>:
+  10006c:	38 80 ff ff 	li      r4,-1
+  100070:	78 84 f8 42 	rldicl  r4,r4,63,1
+  100074:	78 84 0f a4 	rldicr  r4,r4,1,62
+  100078:	78 84 00 20 	clrldi  r4,r4,32
+  10007c:	64 84 aa aa 	oris    r4,r4,43690
+  100080:	78 84 07 c6 	rldicr  r4,r4,32,31
+  100084:	60 84 aa aa 	ori     r4,r4,43690
+  100088:	64 83 55 55 	oris    r3,r4,21845
+  10008c:	4e 80 00 20 	blr

@@ -1,0 +1,16 @@
+Disassembly of section .text:
+
+00100000 <test_mtcrf_1>:
+  100000:	7c 6f f1 20 	mtcr    r3
+  100004:	7c 80 00 26 	mfcr    r4
+  100008:	4e 80 00 20 	blr
+
+0010000c <test_mtcrf_2>:
+  10000c:	7c 60 f1 20 	mtcrf   15,r3
+  100010:	7c 80 00 26 	mfcr    r4
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_mtcrf_3>:
+  100018:	7c 6a a1 20 	mtcrf   170,r3
+  10001c:	7c 80 00 26 	mfcr    r4
+  100020:	4e 80 00 20 	blr

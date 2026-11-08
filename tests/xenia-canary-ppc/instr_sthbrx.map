@@ -1,0 +1,6 @@
+00000000 t test_sthbrx_1
+00000008 t test_sthbrx_offset
+00000010 t test_stwbrx_1
+00000018 t test_stwbrx_offset
+00000020 t test_stdbrx_1
+00000028 t test_stdbrx_offset

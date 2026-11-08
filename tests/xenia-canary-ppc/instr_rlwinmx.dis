@@ -1,0 +1,17 @@
+Disassembly of section .text:
+
+00100000 <test_rlwinmx_1>:
+  100000:	54 83 44 2f 	rlwinm. r3,r4,8,16,23
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_rlwinmx_2>:
+  100008:	54 83 82 1f 	rlwinm. r3,r4,16,8,15
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_rlwinmx_3>:
+  100010:	54 83 25 37 	rlwinm. r3,r4,4,20,27
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_rlwinmx_4>:
+  100018:	54 83 00 3f 	rotlwi. r3,r4,0
+  10001c:	4e 80 00 20 	blr

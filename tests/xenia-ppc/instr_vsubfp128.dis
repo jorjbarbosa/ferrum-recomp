@@ -1,0 +1,5 @@
+Disassembly of section .text:
+
+00100000 <test_vsubfp128_1>:
+  100000:	14 03 20 50 	vsubfp128 v0,v3,v4
+  100004:	4e 80 00 20 	blr

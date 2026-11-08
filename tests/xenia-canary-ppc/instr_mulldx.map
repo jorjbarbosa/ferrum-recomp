@@ -1,0 +1,6 @@
+00000000 t test_mulldx_1
+0000000c t test_mulldx_1_constant
+00000020 t test_mulldx_negative
+0000002c t test_mulldx_overflow
+00000038 t test_mullwx_1
+00000044 t test_mullwx_negative

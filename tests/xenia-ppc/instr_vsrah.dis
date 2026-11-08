@@ -1,0 +1,5 @@
+Disassembly of section .text:
+
+00100000 <test_vsrah_1>:
+  100000:	10 a3 23 44 	vsrah   v5,v3,v4
+  100004:	4e 80 00 20 	blr

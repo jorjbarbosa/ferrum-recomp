@@ -1,0 +1,5 @@
+00000000 t test_lhz_1
+00000008 t test_lhz_offset
+00000010 t test_lhzu_1
+00000018 t test_lhzx_1
+00000020 t test_lhzux_1

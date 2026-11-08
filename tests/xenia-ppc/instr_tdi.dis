@@ -1,0 +1,289 @@
+Disassembly of section .text:
+
+00100000 <test_tdlti_1>:
+  100000:	0a 03 00 10 	tdlti   r3,16
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_tdlti_1_constant>:
+  100008:	38 60 00 18 	li      r3,24
+  10000c:	0a 03 00 10 	tdlti   r3,16
+  100010:	4e 80 00 20 	blr
+
+00100014 <test_tdlti_2>:
+  100014:	0a 03 00 00 	tdlti   r3,0
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_tdlti_2_constant>:
+  10001c:	38 60 00 18 	li      r3,24
+  100020:	0a 03 00 00 	tdlti   r3,0
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_tdlei_1>:
+  100028:	0a 83 00 10 	tdlei   r3,16
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_tdlei_1_constant>:
+  100030:	38 60 00 18 	li      r3,24
+  100034:	0a 83 00 10 	tdlei   r3,16
+  100038:	4e 80 00 20 	blr
+
+0010003c <test_tdlei_2>:
+  10003c:	0a 83 00 00 	tdlei   r3,0
+  100040:	4e 80 00 20 	blr
+
+00100044 <test_tdlei_2_constant>:
+  100044:	38 60 00 18 	li      r3,24
+  100048:	0a 83 00 00 	tdlei   r3,0
+  10004c:	4e 80 00 20 	blr
+
+00100050 <test_tdeqi_1>:
+  100050:	08 83 00 18 	tdeqi   r3,24
+  100054:	4e 80 00 20 	blr
+
+00100058 <test_tdeqi_1_constant>:
+  100058:	38 60 00 00 	li      r3,0
+  10005c:	08 83 00 18 	tdeqi   r3,24
+  100060:	4e 80 00 20 	blr
+
+00100064 <test_tdeqi_2>:
+  100064:	08 83 00 00 	tdeqi   r3,0
+  100068:	4e 80 00 20 	blr
+
+0010006c <test_tdeqi_2_constant>:
+  10006c:	38 60 00 18 	li      r3,24
+  100070:	08 83 00 00 	tdeqi   r3,0
+  100074:	4e 80 00 20 	blr
+
+00100078 <test_tdgei_1>:
+  100078:	09 83 00 30 	tdgei   r3,48
+  10007c:	4e 80 00 20 	blr
+
+00100080 <test_tdgei_1_constant>:
+  100080:	38 60 00 18 	li      r3,24
+  100084:	09 83 00 30 	tdgei   r3,48
+  100088:	4e 80 00 20 	blr
+
+0010008c <test_tdgei_2>:
+  10008c:	09 83 00 30 	tdgei   r3,48
+  100090:	4e 80 00 20 	blr
+
+00100094 <test_tdgei_2_constant>:
+  100094:	38 60 00 00 	li      r3,0
+  100098:	09 83 00 30 	tdgei   r3,48
+  10009c:	4e 80 00 20 	blr
+
+001000a0 <test_tdgei_3>:
+  1000a0:	09 83 00 00 	tdgei   r3,0
+  1000a4:	4e 80 00 20 	blr
+
+001000a8 <test_tdgei_3_constant>:
+  1000a8:	38 60 ff ff 	li      r3,-1
+  1000ac:	09 83 00 00 	tdgei   r3,0
+  1000b0:	4e 80 00 20 	blr
+
+001000b4 <test_tdgti_1>:
+  1000b4:	09 03 00 30 	tdgti   r3,48
+  1000b8:	4e 80 00 20 	blr
+
+001000bc <test_tdgti_1_constant>:
+  1000bc:	38 60 00 18 	li      r3,24
+  1000c0:	09 03 00 30 	tdgti   r3,48
+  1000c4:	4e 80 00 20 	blr
+
+001000c8 <test_tdgti_2>:
+  1000c8:	09 03 00 30 	tdgti   r3,48
+  1000cc:	4e 80 00 20 	blr
+
+001000d0 <test_tdgti_2_constant>:
+  1000d0:	38 60 00 00 	li      r3,0
+  1000d4:	09 03 00 30 	tdgti   r3,48
+  1000d8:	4e 80 00 20 	blr
+
+001000dc <test_tdgti_3>:
+  1000dc:	09 03 00 00 	tdgti   r3,0
+  1000e0:	4e 80 00 20 	blr
+
+001000e4 <test_tdgti_3_constant>:
+  1000e4:	38 60 ff ff 	li      r3,-1
+  1000e8:	09 03 00 00 	tdgti   r3,0
+  1000ec:	4e 80 00 20 	blr
+
+001000f0 <test_tdnli_1>:
+  1000f0:	09 83 00 30 	tdgei   r3,48
+  1000f4:	4e 80 00 20 	blr
+
+001000f8 <test_tdnli_1_constant>:
+  1000f8:	38 60 00 18 	li      r3,24
+  1000fc:	09 83 00 30 	tdgei   r3,48
+  100100:	4e 80 00 20 	blr
+
+00100104 <test_tdnli_2>:
+  100104:	09 83 00 30 	tdgei   r3,48
+  100108:	4e 80 00 20 	blr
+
+0010010c <test_tdnli_2_constant>:
+  10010c:	38 60 00 00 	li      r3,0
+  100110:	09 83 00 30 	tdgei   r3,48
+  100114:	4e 80 00 20 	blr
+
+00100118 <test_tdnli_3>:
+  100118:	09 83 00 00 	tdgei   r3,0
+  10011c:	4e 80 00 20 	blr
+
+00100120 <test_tdnli_3_constant>:
+  100120:	38 60 ff ff 	li      r3,-1
+  100124:	09 83 00 00 	tdgei   r3,0
+  100128:	4e 80 00 20 	blr
+
+0010012c <test_tdnei_1>:
+  10012c:	0b 03 00 18 	tdnei   r3,24
+  100130:	4e 80 00 20 	blr
+
+00100134 <test_tdnei_1_constant>:
+  100134:	38 60 00 18 	li      r3,24
+  100138:	0b 03 00 18 	tdnei   r3,24
+  10013c:	4e 80 00 20 	blr
+
+00100140 <test_tdnei_2>:
+  100140:	0b 03 00 00 	tdnei   r3,0
+  100144:	4e 80 00 20 	blr
+
+00100148 <test_tdnei_2_constant>:
+  100148:	38 60 00 00 	li      r3,0
+  10014c:	0b 03 00 00 	tdnei   r3,0
+  100150:	4e 80 00 20 	blr
+
+00100154 <test_tdngi_1>:
+  100154:	0a 83 00 10 	tdlei   r3,16
+  100158:	4e 80 00 20 	blr
+
+0010015c <test_tdngi_1_constant>:
+  10015c:	38 60 00 18 	li      r3,24
+  100160:	0a 83 00 10 	tdlei   r3,16
+  100164:	4e 80 00 20 	blr
+
+00100168 <test_tdngi_2>:
+  100168:	0a 83 00 00 	tdlei   r3,0
+  10016c:	4e 80 00 20 	blr
+
+00100170 <test_tdngi_2_constant>:
+  100170:	38 60 00 18 	li      r3,24
+  100174:	0a 83 00 00 	tdlei   r3,0
+  100178:	4e 80 00 20 	blr
+
+0010017c <test_tdngi_3>:
+  10017c:	0a 83 ff ff 	tdlei   r3,-1
+  100180:	4e 80 00 20 	blr
+
+00100184 <test_tdngi_3_constant>:
+  100184:	38 60 00 00 	li      r3,0
+  100188:	0a 83 ff ff 	tdlei   r3,-1
+  10018c:	4e 80 00 20 	blr
+
+00100190 <test_tdllti_1>:
+  100190:	08 43 00 10 	tdllti  r3,16
+  100194:	4e 80 00 20 	blr
+
+00100198 <test_tdllti_1_constant>:
+  100198:	38 60 00 18 	li      r3,24
+  10019c:	08 43 00 10 	tdllti  r3,16
+  1001a0:	4e 80 00 20 	blr
+
+001001a4 <test_tdllti_2>:
+  1001a4:	08 43 00 00 	tdllti  r3,0
+  1001a8:	4e 80 00 20 	blr
+
+001001ac <test_tdllti_2_constant>:
+  1001ac:	38 60 00 18 	li      r3,24
+  1001b0:	08 43 00 00 	tdllti  r3,0
+  1001b4:	4e 80 00 20 	blr
+
+001001b8 <test_tdllei_1>:
+  1001b8:	08 c3 00 10 	tdllei  r3,16
+  1001bc:	4e 80 00 20 	blr
+
+001001c0 <test_tdllei_1_constant>:
+  1001c0:	38 60 00 18 	li      r3,24
+  1001c4:	08 c3 00 10 	tdllei  r3,16
+  1001c8:	4e 80 00 20 	blr
+
+001001cc <test_tdllei_2>:
+  1001cc:	08 c3 00 00 	tdllei  r3,0
+  1001d0:	4e 80 00 20 	blr
+
+001001d4 <test_tdllei_2_constant>:
+  1001d4:	38 60 00 18 	li      r3,24
+  1001d8:	08 c3 00 00 	tdllei  r3,0
+  1001dc:	4e 80 00 20 	blr
+
+001001e0 <test_tdlgei_1>:
+  1001e0:	08 a3 00 30 	tdlgei  r3,48
+  1001e4:	4e 80 00 20 	blr
+
+001001e8 <test_tdlgei_1_constant>:
+  1001e8:	38 60 00 18 	li      r3,24
+  1001ec:	08 a3 00 30 	tdlgei  r3,48
+  1001f0:	4e 80 00 20 	blr
+
+001001f4 <test_tdlgei_2>:
+  1001f4:	08 a3 00 30 	tdlgei  r3,48
+  1001f8:	4e 80 00 20 	blr
+
+001001fc <test_tdlgei_2_constant>:
+  1001fc:	38 60 00 00 	li      r3,0
+  100200:	08 a3 00 30 	tdlgei  r3,48
+  100204:	4e 80 00 20 	blr
+
+00100208 <test_tdlgti_1>:
+  100208:	08 23 00 30 	tdlgti  r3,48
+  10020c:	4e 80 00 20 	blr
+
+00100210 <test_tdlgti_1_constant>:
+  100210:	38 60 00 18 	li      r3,24
+  100214:	08 23 00 30 	tdlgti  r3,48
+  100218:	4e 80 00 20 	blr
+
+0010021c <test_tdlgti_2>:
+  10021c:	08 23 00 30 	tdlgti  r3,48
+  100220:	4e 80 00 20 	blr
+
+00100224 <test_tdlgti_2_constant>:
+  100224:	38 60 00 00 	li      r3,0
+  100228:	08 23 00 30 	tdlgti  r3,48
+  10022c:	4e 80 00 20 	blr
+
+00100230 <test_tdlnli_1>:
+  100230:	08 a3 00 30 	tdlgei  r3,48
+  100234:	4e 80 00 20 	blr
+
+00100238 <test_tdlnli_1_constant>:
+  100238:	38 60 00 18 	li      r3,24
+  10023c:	08 a3 00 30 	tdlgei  r3,48
+  100240:	4e 80 00 20 	blr
+
+00100244 <test_tdlnli_2>:
+  100244:	08 a3 00 30 	tdlgei  r3,48
+  100248:	4e 80 00 20 	blr
+
+0010024c <test_tdlnli_2_constant>:
+  10024c:	38 60 00 00 	li      r3,0
+  100250:	08 a3 00 30 	tdlgei  r3,48
+  100254:	4e 80 00 20 	blr
+
+00100258 <test_tdlngi_1>:
+  100258:	08 c3 00 10 	tdllei  r3,16
+  10025c:	4e 80 00 20 	blr
+
+00100260 <test_tdlngi_1_constant>:
+  100260:	38 60 00 18 	li      r3,24
+  100264:	08 c3 00 10 	tdllei  r3,16
+  100268:	4e 80 00 20 	blr
+
+0010026c <test_tdlngi_2>:
+  10026c:	08 c3 00 00 	tdllei  r3,0
+  100270:	4e 80 00 20 	blr
+
+00100274 <test_tdlngi_2_constant>:
+  100274:	38 60 00 18 	li      r3,24
+  100278:	08 c3 00 00 	tdllei  r3,0
+  10027c:	4e 80 00 20 	blr

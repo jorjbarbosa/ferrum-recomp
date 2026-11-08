@@ -1,0 +1,10 @@
+00000000 t test_crandc_1
+00000014 t test_crandc_1_constant
+00000038 t test_crandc_2
+0000004c t test_crandc_2_constant
+00000070 t test_crandc_3
+00000084 t test_crandc_3_constant
+000000a8 t test_crandc_4
+000000bc t test_crandc_4_constant
+000000e0 t test_crandc_5
+000000f4 t test_crandc_5_constant

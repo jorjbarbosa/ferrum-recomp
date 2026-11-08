@@ -1,0 +1,10 @@
+00000000 t test_xor_1
+00000008 t test_xor_1_constant
+00000020 t test_xor_2
+00000028 t test_xor_2_constant
+00000044 t test_xor_3
+0000004c t test_xor_3_constant
+0000005c t test_xor_4
+00000064 t test_xor_4_constant
+00000084 t test_xor_5
+0000008c t test_xor_5_constant

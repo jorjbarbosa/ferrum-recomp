@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[package]
+name = "ferrum-codegen"
+description = "Rust source generation for recompiled PowerPC functions"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+ferrum-analysis.workspace = true
+ferrum-decoder.workspace = true
+# For the SPR policy, which generated code has to follow.
+ferrum-runtime.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+# To check that the generated manifests are valid TOML.
+toml.workspace = true

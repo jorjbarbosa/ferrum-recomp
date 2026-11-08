@@ -1,0 +1,17 @@
+Disassembly of section .text:
+
+00100000 <test_eqvx_1>:
+  100000:	7c 83 2a 39 	eqv.    r3,r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_eqvx_2>:
+  100008:	7c 83 2a 39 	eqv.    r3,r4,r5
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_eqvx_3>:
+  100010:	7c 83 2a 39 	eqv.    r3,r4,r5
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_eqvx_4>:
+  100018:	7c 83 2a 39 	eqv.    r3,r4,r5
+  10001c:	4e 80 00 20 	blr

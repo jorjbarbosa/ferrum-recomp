@@ -1,0 +1,4 @@
+00000000 t test_lwarx_1
+00000008 t test_lwarx_offset
+00000010 t test_ldarx_1
+00000018 t test_ldarx_offset

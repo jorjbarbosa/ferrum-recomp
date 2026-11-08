@@ -1,0 +1,27 @@
+Disassembly of section .text:
+
+00100000 <test_negx_1>:
+  100000:	7c 64 00 d1 	neg.    r3,r4
+  100004:	7d 80 00 26 	mfcr    r12
+  100008:	4e 80 00 20 	blr
+
+0010000c <test_negx_1_constant>:
+  10000c:	38 80 10 00 	li      r4,4096
+  100010:	7c 64 00 d1 	neg.    r3,r4
+  100014:	7d 80 00 26 	mfcr    r12
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_negx_negative>:
+  10001c:	7c 64 00 d1 	neg.    r3,r4
+  100020:	7d 80 00 26 	mfcr    r12
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_negx_zero>:
+  100028:	7c 64 00 d1 	neg.    r3,r4
+  10002c:	7d 80 00 26 	mfcr    r12
+  100030:	4e 80 00 20 	blr
+
+00100034 <test_negx_min>:
+  100034:	7c 64 00 d1 	neg.    r3,r4
+  100038:	7d 80 00 26 	mfcr    r12
+  10003c:	4e 80 00 20 	blr

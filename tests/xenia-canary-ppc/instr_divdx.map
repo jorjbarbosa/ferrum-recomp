@@ -1,0 +1,10 @@
+00000000 t test_divdx_1
+0000000c t test_divdx_1_constant
+00000020 t test_divdx_negative
+0000002c t test_divdx_by_zero
+00000038 t test_divdux_1
+00000044 t test_divdux_large
+00000050 t test_divwx_1
+0000005c t test_divwx_negative
+00000068 t test_divwux_1
+00000074 t test_divwux_large

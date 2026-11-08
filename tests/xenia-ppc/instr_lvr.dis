@@ -1,0 +1,22 @@
+Disassembly of section .text:
+
+00100000 <test_lvr_1>:
+  100000:	7c 64 2c 4e 	lvrx    v3,r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_lvr_1_constant>:
+  100008:	3c 80 10 00 	lis     r4,4096
+  10000c:	60 84 10 b7 	ori     r4,r4,4279
+  100010:	38 a0 00 10 	li      r5,16
+  100014:	7c 64 2c 4e 	lvrx    v3,r4,r5
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_lvr_2>:
+  10001c:	7c 64 2c 4e 	lvrx    v3,r4,r5
+  100020:	4e 80 00 20 	blr
+
+00100024 <test_lvr_2_constant>:
+  100024:	3c 80 20 00 	lis     r4,8192
+  100028:	38 a0 00 10 	li      r5,16
+  10002c:	7c 64 2c 4e 	lvrx    v3,r4,r5
+  100030:	4e 80 00 20 	blr

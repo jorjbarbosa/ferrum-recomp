@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[package]
+name = "ferrum-harness"
+description = "Runs the Xenia PPC test suites through ferrum-codegen and ferrum-runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[features]
+# Turns on the runtime's checks of every access against the harness's regions. Off by default:
+# Cargo would otherwise unify it into every build of the workspace. CI runs it as its own step.
+trace = ["ferrum-runtime/trace"]
+
+[dependencies]
+ferrum-decoder.workspace = true
+ferrum-runtime.workspace = true
+serde.workspace = true
+toml.workspace = true
+
+[build-dependencies]
+ferrum-analysis.workspace = true
+ferrum-codegen.workspace = true
+ferrum-decoder.workspace = true
+serde.workspace = true
+toml.workspace = true

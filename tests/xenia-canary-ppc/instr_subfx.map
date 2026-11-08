@@ -1,0 +1,9 @@
+00000000 t test_subfx_1
+0000000c t test_subfx_1_constant
+00000020 t test_subfx_underflow
+0000002c t test_subfx_negative
+00000038 t test_subfcx_1
+00000044 t test_subfcx_borrow
+00000050 t test_subfex_1
+00000064 t test_subfmex_1
+00000078 t test_subfzex_1

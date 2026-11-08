@@ -1,0 +1,10 @@
+00000000 t test_rldic_1
+00000008 t test_rldic_1_constant
+0000002c t test_rldic_2
+00000034 t test_rldic_2_constant
+00000058 t test_rldic_3
+00000060 t test_rldic_3_constant
+00000084 t test_rldic_4
+0000008c t test_rldic_4_constant
+000000b0 t test_rldic_5
+000000b8 t test_rldic_5_constant

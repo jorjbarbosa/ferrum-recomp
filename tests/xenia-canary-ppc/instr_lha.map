@@ -1,0 +1,5 @@
+00000000 t test_lha_positive
+00000008 t test_lha_negative
+00000010 t test_lhau_positive
+00000018 t test_lhax_negative
+00000020 t test_lhaux_1

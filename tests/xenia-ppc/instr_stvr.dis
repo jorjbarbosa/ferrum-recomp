@@ -1,0 +1,31 @@
+Disassembly of section .text:
+
+00100000 <test_stvr_1>:
+  100000:	7c 64 2d 4e 	stvrx   v3,r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_stvr_1_constant>:
+  100008:	3c 80 10 00 	lis     r4,4096
+  10000c:	60 84 10 40 	ori     r4,r4,4160
+  100010:	38 a0 00 10 	li      r5,16
+  100014:	7c 64 2d 4e 	stvrx   v3,r4,r5
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_stvr_2>:
+  10001c:	7c 64 05 4e 	stvrx   v3,r4,r0
+  100020:	4e 80 00 20 	blr
+
+00100024 <test_stvr_2_constant>:
+  100024:	3c 80 10 00 	lis     r4,4096
+  100028:	60 84 10 44 	ori     r4,r4,4164
+  10002c:	7c 64 05 4e 	stvrx   v3,r4,r0
+  100030:	4e 80 00 20 	blr
+
+00100034 <test_stvr_3>:
+  100034:	7c 64 2d 4e 	stvrx   v3,r4,r5
+  100038:	4e 80 00 20 	blr
+
+0010003c <test_stvr_3_constant>:
+  10003c:	3c 80 10 01 	lis     r4,4097
+  100040:	7c 64 05 4e 	stvrx   v3,r4,r0
+  100044:	4e 80 00 20 	blr

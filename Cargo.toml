@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99.1"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+ferrum-analysis = { path = "crates/ferrum-analysis" }
+ferrum-codegen = { path = "crates/ferrum-codegen" }
+ferrum-decoder = { path = "crates/ferrum-decoder" }
+ferrum-runtime = { path = "crates/ferrum-runtime" }
+ferrum-xex = { path = "crates/ferrum-xex" }
+aes = "0.9"
+anyhow = "1.0"
+cbc = "0.2"
+clap = { version = "4.6", features = ["derive"] }
+libc = "0.2"
+lzxd = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+sha1 = { version = "0.11", default-features = false }
+thiserror = "2.0"
+toml = "1.2"
+windows-sys = { version = "0.61", features = ["Win32_System_Memory"] }
+
+# lzxd subtracts an offset read from the stream without checking it (`copy_from_self` in
+# window.rs). With overflow checks a crafted stream makes that panic; without them it wraps to a
+# masked index and the output is merely wrong, which ferrum-xex then reports as an error by
+# comparing it with the page digests. This makes test builds behave like release builds.
+[profile.dev.package.lzxd]
+overflow-checks = false

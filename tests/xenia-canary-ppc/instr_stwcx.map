@@ -1,0 +1,4 @@
+00000000 t test_stwcx_1
+00000010 t test_stwcx_fail
+0000001c t test_stdcx_1
+0000002c t test_stdcx_fail

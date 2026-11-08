@@ -1,0 +1,23 @@
+Disassembly of section .text:
+
+00100000 <test_stwcx_1>:
+  100000:	7c c4 28 28 	lwarx   r6,r4,r5
+  100004:	7c 64 29 2d 	stwcx.  r3,r4,r5
+  100008:	7d 80 00 26 	mfcr    r12
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_stwcx_fail>:
+  100010:	7c 64 29 2d 	stwcx.  r3,r4,r5
+  100014:	7d 80 00 26 	mfcr    r12
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_stdcx_1>:
+  10001c:	7c c4 28 a8 	ldarx   r6,r4,r5
+  100020:	7c 64 29 ad 	stdcx.  r3,r4,r5
+  100024:	7d 80 00 26 	mfcr    r12
+  100028:	4e 80 00 20 	blr
+
+0010002c <test_stdcx_fail>:
+  10002c:	7c 64 29 ad 	stdcx.  r3,r4,r5
+  100030:	7d 80 00 26 	mfcr    r12
+  100034:	4e 80 00 20 	blr

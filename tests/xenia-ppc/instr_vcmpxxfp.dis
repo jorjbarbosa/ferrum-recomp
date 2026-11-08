@@ -1,0 +1,31 @@
+Disassembly of section .text:
+
+00100000 <test_vcmpxxfp_1>:
+  100000:	10 64 2c c6 	.long 0x10642cc6
+  100004:	7c 70 20 26 	mfocrf  r3,2
+  100008:	4e 80 00 20 	blr
+
+0010000c <test_vcmpxxfp_2>:
+  10000c:	10 64 2c c6 	.long 0x10642cc6
+  100010:	7c 70 20 26 	mfocrf  r3,2
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_vcmpxxfp_3>:
+  100018:	10 64 2c c6 	.long 0x10642cc6
+  10001c:	7c 70 20 26 	mfocrf  r3,2
+  100020:	4e 80 00 20 	blr
+
+00100024 <test_vcmpbfp_1>:
+  100024:	10 64 2f c6 	.long 0x10642fc6
+  100028:	7c 70 20 26 	mfocrf  r3,2
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_vcmpbfp_2>:
+  100030:	10 64 2f c6 	.long 0x10642fc6
+  100034:	7c 70 20 26 	mfocrf  r3,2
+  100038:	4e 80 00 20 	blr
+
+0010003c <test_vcmpbfp_3>:
+  10003c:	10 64 2f c6 	.long 0x10642fc6
+  100040:	7c 70 20 26 	mfocrf  r3,2
+  100044:	4e 80 00 20 	blr

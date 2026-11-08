@@ -1,0 +1,102 @@
+Disassembly of section .text:
+
+00100000 <test_mcrf_1>:
+  100000:	7c 03 20 00 	cmpw    r3,r4
+  100004:	4c 80 00 00 	mcrf    cr1,cr0
+  100008:	7d 80 00 26 	mfcr    r12
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_mcrf_1_constant>:
+  100010:	38 60 00 01 	li      r3,1
+  100014:	38 80 00 02 	li      r4,2
+  100018:	7c 03 20 00 	cmpw    r3,r4
+  10001c:	4c 80 00 00 	mcrf    cr1,cr0
+  100020:	7d 80 00 26 	mfcr    r12
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_mcrf_2>:
+  100028:	7c 03 20 00 	cmpw    r3,r4
+  10002c:	4d 00 00 00 	mcrf    cr2,cr0
+  100030:	7d 80 00 26 	mfcr    r12
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_mcrf_2_constant>:
+  100038:	38 60 00 02 	li      r3,2
+  10003c:	38 80 00 01 	li      r4,1
+  100040:	7c 03 20 00 	cmpw    r3,r4
+  100044:	4d 00 00 00 	mcrf    cr2,cr0
+  100048:	7d 80 00 26 	mfcr    r12
+  10004c:	4e 80 00 20 	blr
+
+00100050 <test_mcrf_3>:
+  100050:	7d 83 20 00 	cmpw    cr3,r3,r4
+  100054:	4c 0c 00 00 	mcrf    cr0,cr3
+  100058:	7d 80 00 26 	mfcr    r12
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_mcrf_3_constant>:
+  100060:	38 60 00 05 	li      r3,5
+  100064:	38 80 00 05 	li      r4,5
+  100068:	7d 83 20 00 	cmpw    cr3,r3,r4
+  10006c:	4c 0c 00 00 	mcrf    cr0,cr3
+  100070:	7d 80 00 26 	mfcr    r12
+  100074:	4e 80 00 20 	blr
+
+00100078 <test_mcrf_4>:
+  100078:	7e 83 20 00 	cmpw    cr5,r3,r4
+  10007c:	4f 94 00 00 	mcrf    cr7,cr5
+  100080:	7d 80 00 26 	mfcr    r12
+  100084:	4e 80 00 20 	blr
+
+00100088 <test_mcrf_4_constant>:
+  100088:	38 60 00 64 	li      r3,100
+  10008c:	38 80 00 32 	li      r4,50
+  100090:	7e 83 20 00 	cmpw    cr5,r3,r4
+  100094:	4f 94 00 00 	mcrf    cr7,cr5
+  100098:	7d 80 00 26 	mfcr    r12
+  10009c:	4e 80 00 20 	blr
+
+001000a0 <test_mcrf_5>:
+  1000a0:	7d 03 20 00 	cmpw    cr2,r3,r4
+  1000a4:	7e 05 30 00 	cmpw    cr4,r5,r6
+  1000a8:	4f 08 00 00 	mcrf    cr6,cr2
+  1000ac:	7d 80 00 26 	mfcr    r12
+  1000b0:	4e 80 00 20 	blr
+
+001000b4 <test_mcrf_5_constant>:
+  1000b4:	38 60 00 0a 	li      r3,10
+  1000b8:	38 80 00 14 	li      r4,20
+  1000bc:	38 a0 00 1e 	li      r5,30
+  1000c0:	38 c0 00 1e 	li      r6,30
+  1000c4:	7d 03 20 00 	cmpw    cr2,r3,r4
+  1000c8:	7e 05 30 00 	cmpw    cr4,r5,r6
+  1000cc:	4f 08 00 00 	mcrf    cr6,cr2
+  1000d0:	7d 80 00 26 	mfcr    r12
+  1000d4:	4e 80 00 20 	blr
+
+001000d8 <test_mcrf_6>:
+  1000d8:	7d 83 20 00 	cmpw    cr3,r3,r4
+  1000dc:	4d 8c 00 00 	mcrf    cr3,cr3
+  1000e0:	7d 80 00 26 	mfcr    r12
+  1000e4:	4e 80 00 20 	blr
+
+001000e8 <test_mcrf_6_constant>:
+  1000e8:	38 60 00 05 	li      r3,5
+  1000ec:	38 80 00 05 	li      r4,5
+  1000f0:	7d 83 20 00 	cmpw    cr3,r3,r4
+  1000f4:	4d 8c 00 00 	mcrf    cr3,cr3
+  1000f8:	7d 80 00 26 	mfcr    r12
+  1000fc:	4e 80 00 20 	blr
+
+00100100 <test_mcrf_7>:
+  100100:	7c 6f f1 20 	mtcr    r3
+  100104:	4c 1c 00 00 	mcrf    cr0,cr7
+  100108:	7d 80 00 26 	mfcr    r12
+  10010c:	4e 80 00 20 	blr
+
+00100110 <test_mcrf_7_constant>:
+  100110:	38 60 00 09 	li      r3,9
+  100114:	7c 6f f1 20 	mtcr    r3
+  100118:	4c 1c 00 00 	mcrf    cr0,cr7
+  10011c:	7d 80 00 26 	mfcr    r12
+  100120:	4e 80 00 20 	blr

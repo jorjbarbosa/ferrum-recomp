@@ -1,0 +1,10 @@
+00000000 t test_rldimi_1
+00000008 t test_rldimi_1_constant
+00000030 t test_rldimi_2
+00000038 t test_rldimi_2_constant
+00000060 t test_rldimi_3
+00000068 t test_rldimi_3_constant
+00000090 t test_rldimi_4
+00000098 t test_rldimi_4_constant
+000000b4 t test_rldimi_5
+000000bc t test_rldimi_5_constant

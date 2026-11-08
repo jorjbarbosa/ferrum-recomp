@@ -1,0 +1,24 @@
+# Build output
+/target/
+**/target/
+Cargo.lock.bak
+
+# Generated recompilation output
+/out/
+
+# Local reference material (large PDFs, page scans)
+/docs/ppc/
+
+# Game content must never be committed
+*.xex
+*.xexp
+*.bik
+*.big
+*.fat
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

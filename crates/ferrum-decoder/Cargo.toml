@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[package]
+name = "ferrum-decoder"
+description = "PowerPC (Xenon) instruction decoder and disassembler"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true

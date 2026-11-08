@@ -1,0 +1,3 @@
+00000000 t test_mtspr_xer
+0000000c t test_mtspr_lr
+00000020 t test_mtspr_ctr

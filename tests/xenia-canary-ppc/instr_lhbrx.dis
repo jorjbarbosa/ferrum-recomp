@@ -1,0 +1,13 @@
+Disassembly of section .text:
+
+00100000 <test_lhbrx_1>:
+  100000:	7c 64 2e 2c 	lhbrx   r3,r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_lhbrx_2>:
+  100008:	7c 64 2e 2c 	lhbrx   r3,r4,r5
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_lhbrx_3>:
+  100010:	7c 64 2e 2c 	lhbrx   r3,r4,r5
+  100014:	4e 80 00 20 	blr

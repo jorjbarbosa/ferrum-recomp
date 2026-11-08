@@ -1,0 +1,10 @@
+00000000 t test_cror_1
+00000014 t test_cror_1_constant
+00000038 t test_cror_2
+0000004c t test_cror_2_constant
+00000070 t test_cror_3
+00000084 t test_cror_3_constant
+000000a8 t test_cror_4
+000000bc t test_cror_4_constant
+000000e0 t test_cror_5
+000000f4 t test_cror_5_constant

@@ -1,0 +1,163 @@
+Disassembly of section .text:
+
+00100000 <test_rlwinm_1>:
+  100000:	54 83 c2 1e 	rlwinm  r3,r4,24,8,15
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_rlwinm_1_constant>:
+  100008:	3c 80 12 34 	lis     r4,4660
+  10000c:	60 84 56 78 	ori     r4,r4,22136
+  100010:	54 83 c2 1e 	rlwinm  r3,r4,24,8,15
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_rlwinm_2>:
+  100018:	54 83 20 36 	rlwinm  r3,r4,4,0,27
+  10001c:	4e 80 00 20 	blr
+
+00100020 <test_rlwinm_2_constant>:
+  100020:	3c 80 12 34 	lis     r4,4660
+  100024:	60 84 56 78 	ori     r4,r4,22136
+  100028:	54 83 20 36 	rlwinm  r3,r4,4,0,27
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_rlwinm_3>:
+  100030:	54 83 10 3a 	rlwinm  r3,r4,2,0,29
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_rlwinm_3_constant>:
+  100038:	3c 80 90 00 	lis     r4,-28672
+  10003c:	60 84 30 00 	ori     r4,r4,12288
+  100040:	78 84 00 20 	clrldi  r4,r4,32
+  100044:	54 83 10 3a 	rlwinm  r3,r4,2,0,29
+  100048:	4e 80 00 20 	blr
+
+0010004c <test_rlwinm_4>:
+  10004c:	54 83 10 3b 	rlwinm. r3,r4,2,0,29
+  100050:	4e 80 00 20 	blr
+
+00100054 <test_rlwinm_4_constant>:
+  100054:	3c 80 b0 04 	lis     r4,-20476
+  100058:	60 84 30 00 	ori     r4,r4,12288
+  10005c:	78 84 00 20 	clrldi  r4,r4,32
+  100060:	54 83 10 3b 	rlwinm. r3,r4,2,0,29
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_rlwinm_5>:
+  100068:	54 83 01 7a 	rlwinm  r3,r4,0,5,29
+  10006c:	4e 80 00 20 	blr
+
+00100070 <test_rlwinm_5_constant>:
+  100070:	3c 80 12 34 	lis     r4,4660
+  100074:	60 84 56 78 	ori     r4,r4,22136
+  100078:	54 83 01 7a 	rlwinm  r3,r4,0,5,29
+  10007c:	4e 80 00 20 	blr
+
+00100080 <test_rlwinm_6>:
+  100080:	54 83 00 3e 	rotlwi  r3,r4,0
+  100084:	4e 80 00 20 	blr
+
+00100088 <test_rlwinm_6_constant>:
+  100088:	3c 80 12 34 	lis     r4,4660
+  10008c:	60 84 56 78 	ori     r4,r4,22136
+  100090:	54 83 00 3e 	rotlwi  r3,r4,0
+  100094:	4e 80 00 20 	blr
+
+00100098 <test_rlwinm_7>:
+  100098:	54 83 00 20 	rlwinm  r3,r4,0,0,16
+  10009c:	4e 80 00 20 	blr
+
+001000a0 <test_rlwinm_7_constant>:
+  1000a0:	3c 80 12 34 	lis     r4,4660
+  1000a4:	60 84 56 78 	ori     r4,r4,22136
+  1000a8:	54 83 00 20 	rlwinm  r3,r4,0,0,16
+  1000ac:	4e 80 00 20 	blr
+
+001000b0 <test_rlwinm_8>:
+  1000b0:	54 83 04 3e 	clrlwi  r3,r4,16
+  1000b4:	4e 80 00 20 	blr
+
+001000b8 <test_rlwinm_8_constant>:
+  1000b8:	3c 80 12 34 	lis     r4,4660
+  1000bc:	60 84 56 78 	ori     r4,r4,22136
+  1000c0:	54 83 04 3e 	clrlwi  r3,r4,16
+  1000c4:	4e 80 00 20 	blr
+
+001000c8 <test_rlwinm_9>:
+  1000c8:	54 83 84 3e 	rlwinm  r3,r4,16,16,31
+  1000cc:	4e 80 00 20 	blr
+
+001000d0 <test_rlwinm_9_constant>:
+  1000d0:	3c 80 12 34 	lis     r4,4660
+  1000d4:	60 84 56 78 	ori     r4,r4,22136
+  1000d8:	54 83 84 3e 	rlwinm  r3,r4,16,16,31
+  1000dc:	4e 80 00 20 	blr
+
+001000e0 <test_extrwi_1>:
+  1000e0:	54 a7 ef 3e 	rlwinm  r7,r5,29,28,31
+  1000e4:	4e 80 00 20 	blr
+
+001000e8 <test_extrwi_1_constant>:
+  1000e8:	38 a0 00 30 	li      r5,48
+  1000ec:	54 a7 ef 3e 	rlwinm  r7,r5,29,28,31
+  1000f0:	4e 80 00 20 	blr
+
+001000f4 <test_extrwi_2>:
+  1000f4:	54 a7 d4 3e 	rlwinm  r7,r5,26,16,31
+  1000f8:	4e 80 00 20 	blr
+
+001000fc <test_extrwi_2_constant>:
+  1000fc:	38 a0 ff ff 	li      r5,-1
+  100100:	78 a5 07 c6 	rldicr  r5,r5,32,31
+  100104:	64 a5 01 23 	oris    r5,r5,291
+  100108:	60 a5 45 67 	ori     r5,r5,17767
+  10010c:	54 a7 d4 3e 	rlwinm  r7,r5,26,16,31
+  100110:	4e 80 00 20 	blr
+
+00100114 <test_extrwi_cr_1>:
+  100114:	54 a7 ef 3f 	rlwinm. r7,r5,29,28,31
+  100118:	7d 80 00 26 	mfcr    r12
+  10011c:	4e 80 00 20 	blr
+
+00100120 <test_extrwi_cr_1_constant>:
+  100120:	38 a0 00 30 	li      r5,48
+  100124:	54 a7 ef 3f 	rlwinm. r7,r5,29,28,31
+  100128:	7d 80 00 26 	mfcr    r12
+  10012c:	4e 80 00 20 	blr
+
+00100130 <test_extrwi_cr_2>:
+  100130:	54 a7 d4 3f 	rlwinm. r7,r5,26,16,31
+  100134:	7d 80 00 26 	mfcr    r12
+  100138:	4e 80 00 20 	blr
+
+0010013c <test_extrwi_cr_2_constant>:
+  10013c:	38 a0 ff ff 	li      r5,-1
+  100140:	78 a5 07 c6 	rldicr  r5,r5,32,31
+  100144:	64 a5 01 23 	oris    r5,r5,291
+  100148:	60 a5 45 67 	ori     r5,r5,17767
+  10014c:	54 a7 d4 3f 	rlwinm. r7,r5,26,16,31
+  100150:	7d 80 00 26 	mfcr    r12
+  100154:	4e 80 00 20 	blr
+
+00100158 <test_extrwi_cr_3>:
+  100158:	54 a7 d4 3f 	rlwinm. r7,r5,26,16,31
+  10015c:	7d 80 00 26 	mfcr    r12
+  100160:	4e 80 00 20 	blr
+
+00100164 <test_extrwi_cr_3_constant>:
+  100164:	38 a0 ff ff 	li      r5,-1
+  100168:	78 a5 07 c6 	rldicr  r5,r5,32,31
+  10016c:	54 a7 d4 3f 	rlwinm. r7,r5,26,16,31
+  100170:	7d 80 00 26 	mfcr    r12
+  100174:	4e 80 00 20 	blr
+
+00100178 <test_rlwinm_10>:
+  100178:	54 e6 ff c2 	rlwinm  r6,r7,31,31,1
+  10017c:	4e 80 00 20 	blr
+
+00100180 <test_rlwinm_11>:
+  100180:	55 06 40 80 	rlwinm  r6,r8,8,2,0
+  100184:	4e 80 00 20 	blr
+
+00100188 <test_rlwinm_12>:
+  100188:	54 87 ff 82 	rlwinm  r7,r4,31,30,1
+  10018c:	4e 80 00 20 	blr

@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+[package]
+name = "ferrum"
+description = "Static recompiler from Xbox 360 PowerPC executables to Rust"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+ferrum-analysis.workspace = true
+ferrum-codegen.workspace = true
+ferrum-decoder.workspace = true
+ferrum-xex.workspace = true
+serde.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+ferrum-xex = { workspace = true, features = ["fixtures"] }

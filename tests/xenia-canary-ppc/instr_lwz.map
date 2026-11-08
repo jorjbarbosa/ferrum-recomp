@@ -1,0 +1,5 @@
+00000000 t test_lwz_1
+00000008 t test_lwz_offset
+00000010 t test_lwzu_1
+00000018 t test_lwzx_1
+00000020 t test_lwzux_1

@@ -1,0 +1,9 @@
+Disassembly of section .text:
+
+00100000 <test_vmrghb_1>:
+  100000:	10 a3 20 0c 	vmrghb  v5,v3,v4
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_vmrghb_2>:
+  100008:	10 a3 20 0c 	vmrghb  v5,v3,v4
+  10000c:	4e 80 00 20 	blr

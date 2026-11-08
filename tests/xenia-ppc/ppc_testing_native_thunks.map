@@ -1,0 +1,3 @@
+00000000 t .load_registers_ctx
+0000020c t .save_registers_ctx
+00000414 T xe_call_native

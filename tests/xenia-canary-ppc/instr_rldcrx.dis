@@ -1,0 +1,17 @@
+Disassembly of section .text:
+
+00100000 <test_rldcrx_1>:
+  100000:	78 83 2d f3 	rldcr.  r3,r4,r5,55
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_rldcrx_2>:
+  100008:	78 83 2b f3 	rldcr.  r3,r4,r5,47
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_rldcrx_3>:
+  100010:	78 83 2f d3 	rldcr.  r3,r4,r5,31
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_rldcrx_4>:
+  100018:	78 83 2f d3 	rldcr.  r3,r4,r5,31
+  10001c:	4e 80 00 20 	blr

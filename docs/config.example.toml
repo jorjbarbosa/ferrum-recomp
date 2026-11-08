@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Copyright (c) 2026 Jorge Barbosa
+
+# An example config of `ferrum recomp`, with every key. Copy it next to your port, change it,
+# and run `ferrum recomp path/to/config.toml`. The addresses below are made up.
+#
+# Paths are relative to the directory of this file. Unknown keys are errors, so that a typo is
+# not ignored.
+
+[main]
+# The XEX to recompile. Game files never go into the ferrum repository.
+xex = "game/default.xex"
+# The output workspace. It may not lie inside another Cargo workspace.
+out = "game-ppc"
+# The root crate of the output; the functions go into crates `<crate_name>-NNN`.
+crate_name = "game-ppc"
+# Functions per generated crate, in address order. 100 is the measured default.
+functions_per_crate = 100
+# The ferrum-runtime the output depends on. By default, the one of the ferrum checkout that
+# built the `ferrum` binary.
+# runtime = "../ferrum-recomp/crates/ferrum-runtime"
+
+[analysis]
+# Functions that discovery misses or cuts wrong, with their range. They are treated like
+# .pdata entries, and replace any function found at the same entry.
+functions = [{ addr = 0x82001000, size = 0x120 }]
+# Ranges where no function starts and the sweep of the gaps does not look, such as data inside
+# a code section.
+skip = [{ addr = 0x82050000, size = 0x40 }]
+# Jump tables whose bound check discovery cannot see: the address of the `bctr` and the number
+# of entries of its table. Discovery warns of each unresolved table.
+jump_tables = [{ addr = 0x82010010, entries = 12 }]
+# The C runtime's setjmp and longjmp, if the game has them. Functions that call setjmp resume
+# after it when a longjmp unwinds to them.
+setjmp = 0x82020000
+longjmp = 0x82020100
+
+[hooks]
+# Functions the port replaces: they are not generated, and the port installs its own with
+# `FnTable::set` after calling the generated `register`.
+function = [{ addr = 0x82003000, name = "my_memcpy" }]
+# Calls to the port at an instruction, which it installs in the `HookTable` of `Kernels`.
+# `after` puts the call after the instruction (false by default). `action` is what happens
+# when the hook returns: "continue" (the default), "return", "jump:0x...", "return_if_true"
+# or "jump_if_true:0x...". A jump has to stay inside the function.
+midasm = [
+    { addr = 0x82001008, name = "fix_fov" },
+    { addr = 0x82001010, name = "skip_intro", after = false, action = "jump_if_true:0x82001020" },
+]
+
+[optimizations]
+# Make a trap whose condition holds a no-op instead of a panic.
+trap_as_nop = false
+# Keep CR, XER, CTR and the reservation in locals. Not implemented: true is an error.
+locals = false

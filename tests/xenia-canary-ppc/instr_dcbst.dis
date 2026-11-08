@@ -1,0 +1,17 @@
+Disassembly of section .text:
+
+00100000 <test_dcbst_1>:
+  100000:	7c 04 28 6c 	dcbst   r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_dcbst_2>:
+  100008:	7c 04 28 6c 	dcbst   r4,r5
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_dcbst_3>:
+  100010:	7c 04 28 6c 	dcbst   r4,r5
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_dcbst_4>:
+  100018:	7c 04 28 6c 	dcbst   r4,r5
+  10001c:	4e 80 00 20 	blr

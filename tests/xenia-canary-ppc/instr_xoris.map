@@ -1,0 +1,10 @@
+00000000 t test_xoris_1
+00000008 t test_xoris_1_constant
+0000001c t test_xoris_2
+00000024 t test_xoris_2_constant
+00000030 t test_xoris_3
+00000038 t test_xoris_3_constant
+00000044 t test_xoris_4
+0000004c t test_xoris_4_constant
+00000064 t test_xoris_5
+0000006c t test_xoris_5_constant

@@ -1,0 +1,50 @@
+Disassembly of section .text:
+
+00100000 <test_addi_1>:
+  100000:	38 64 05 00 	addi    r3,r4,1280
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_addi_1_constant>:
+  100008:	38 80 10 00 	li      r4,4096
+  10000c:	38 64 05 00 	addi    r3,r4,1280
+  100010:	4e 80 00 20 	blr
+
+00100014 <test_addi_2>:
+  100014:	38 64 00 01 	addi    r3,r4,1
+  100018:	4e 80 00 20 	blr
+
+0010001c <test_addi_2_constant>:
+  10001c:	38 80 ff ff 	li      r4,-1
+  100020:	38 64 00 01 	addi    r3,r4,1
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_addi_3>:
+  100028:	38 64 ff ff 	addi    r3,r4,-1
+  10002c:	4e 80 00 20 	blr
+
+00100030 <test_addi_3_constant>:
+  100030:	38 80 01 00 	li      r4,256
+  100034:	38 64 ff ff 	addi    r3,r4,-1
+  100038:	4e 80 00 20 	blr
+
+0010003c <test_addi_4>:
+  10003c:	38 60 12 34 	li      r3,4660
+  100040:	4e 80 00 20 	blr
+
+00100044 <test_addi_4_constant>:
+  100044:	3c 00 de ad 	lis     r0,-8531
+  100048:	60 00 be ef 	ori     r0,r0,48879
+  10004c:	78 00 07 c6 	rldicr  r0,r0,32,31
+  100050:	64 00 de ad 	oris    r0,r0,57005
+  100054:	60 00 be ef 	ori     r0,r0,48879
+  100058:	38 60 12 34 	li      r3,4660
+  10005c:	4e 80 00 20 	blr
+
+00100060 <test_addi_5>:
+  100060:	38 64 7f ff 	addi    r3,r4,32767
+  100064:	4e 80 00 20 	blr
+
+00100068 <test_addi_5_constant>:
+  100068:	38 80 7f ff 	li      r4,32767
+  10006c:	38 64 7f ff 	addi    r3,r4,32767
+  100070:	4e 80 00 20 	blr

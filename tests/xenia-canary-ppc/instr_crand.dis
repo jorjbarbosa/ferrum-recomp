@@ -1,0 +1,91 @@
+Disassembly of section .text:
+
+00100000 <test_crand_1>:
+  100000:	7c 03 20 00 	cmpw    r3,r4
+  100004:	7c 85 30 00 	cmpw    cr1,r5,r6
+  100008:	4c 40 22 02 	crand   eq,lt,4*cr1+lt
+  10000c:	7d 80 00 26 	mfcr    r12
+  100010:	4e 80 00 20 	blr
+
+00100014 <test_crand_1_constant>:
+  100014:	38 60 00 01 	li      r3,1
+  100018:	38 80 00 02 	li      r4,2
+  10001c:	38 a0 00 03 	li      r5,3
+  100020:	38 c0 00 04 	li      r6,4
+  100024:	7c 03 20 00 	cmpw    r3,r4
+  100028:	7c 85 30 00 	cmpw    cr1,r5,r6
+  10002c:	4c 40 22 02 	crand   eq,lt,4*cr1+lt
+  100030:	7d 80 00 26 	mfcr    r12
+  100034:	4e 80 00 20 	blr
+
+00100038 <test_crand_2>:
+  100038:	7c 03 20 00 	cmpw    r3,r4
+  10003c:	7c 85 30 00 	cmpw    cr1,r5,r6
+  100040:	4c 41 2a 02 	crand   eq,gt,4*cr1+gt
+  100044:	7d 80 00 26 	mfcr    r12
+  100048:	4e 80 00 20 	blr
+
+0010004c <test_crand_2_constant>:
+  10004c:	38 60 00 02 	li      r3,2
+  100050:	38 80 00 01 	li      r4,1
+  100054:	38 a0 00 04 	li      r5,4
+  100058:	38 c0 00 03 	li      r6,3
+  10005c:	7c 03 20 00 	cmpw    r3,r4
+  100060:	7c 85 30 00 	cmpw    cr1,r5,r6
+  100064:	4c 41 2a 02 	crand   eq,gt,4*cr1+gt
+  100068:	7d 80 00 26 	mfcr    r12
+  10006c:	4e 80 00 20 	blr
+
+00100070 <test_crand_3>:
+  100070:	7c 03 20 00 	cmpw    r3,r4
+  100074:	7c 85 30 00 	cmpw    cr1,r5,r6
+  100078:	4c 42 32 02 	crand   eq,eq,4*cr1+eq
+  10007c:	7d 80 00 26 	mfcr    r12
+  100080:	4e 80 00 20 	blr
+
+00100084 <test_crand_3_constant>:
+  100084:	38 60 00 01 	li      r3,1
+  100088:	38 80 00 01 	li      r4,1
+  10008c:	38 a0 00 02 	li      r5,2
+  100090:	38 c0 00 02 	li      r6,2
+  100094:	7c 03 20 00 	cmpw    r3,r4
+  100098:	7c 85 30 00 	cmpw    cr1,r5,r6
+  10009c:	4c 42 32 02 	crand   eq,eq,4*cr1+eq
+  1000a0:	7d 80 00 26 	mfcr    r12
+  1000a4:	4e 80 00 20 	blr
+
+001000a8 <test_crand_4>:
+  1000a8:	7d 03 20 00 	cmpw    cr2,r3,r4
+  1000ac:	7d 85 30 00 	cmpw    cr3,r5,r6
+  1000b0:	4d 4a 72 02 	crand   4*cr2+eq,4*cr2+eq,4*cr3+eq
+  1000b4:	7d 80 00 26 	mfcr    r12
+  1000b8:	4e 80 00 20 	blr
+
+001000bc <test_crand_4_constant>:
+  1000bc:	38 60 00 05 	li      r3,5
+  1000c0:	38 80 00 05 	li      r4,5
+  1000c4:	38 a0 00 0a 	li      r5,10
+  1000c8:	38 c0 00 0a 	li      r6,10
+  1000cc:	7d 03 20 00 	cmpw    cr2,r3,r4
+  1000d0:	7d 85 30 00 	cmpw    cr3,r5,r6
+  1000d4:	4d 4a 72 02 	crand   4*cr2+eq,4*cr2+eq,4*cr3+eq
+  1000d8:	7d 80 00 26 	mfcr    r12
+  1000dc:	4e 80 00 20 	blr
+
+001000e0 <test_crand_5>:
+  1000e0:	7e 03 20 00 	cmpw    cr4,r3,r4
+  1000e4:	7e 85 30 00 	cmpw    cr5,r5,r6
+  1000e8:	4e 31 a2 02 	crand   4*cr4+gt,4*cr4+gt,4*cr5+lt
+  1000ec:	7d 80 00 26 	mfcr    r12
+  1000f0:	4e 80 00 20 	blr
+
+001000f4 <test_crand_5_constant>:
+  1000f4:	38 60 00 64 	li      r3,100
+  1000f8:	38 80 00 32 	li      r4,50
+  1000fc:	38 a0 00 0a 	li      r5,10
+  100100:	38 c0 00 14 	li      r6,20
+  100104:	7e 03 20 00 	cmpw    cr4,r3,r4
+  100108:	7e 85 30 00 	cmpw    cr5,r5,r6
+  10010c:	4e 31 a2 02 	crand   4*cr4+gt,4*cr4+gt,4*cr5+lt
+  100110:	7d 80 00 26 	mfcr    r12
+  100114:	4e 80 00 20 	blr

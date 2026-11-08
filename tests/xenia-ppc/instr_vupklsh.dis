@@ -1,0 +1,17 @@
+Disassembly of section .text:
+
+00100000 <test_vupklsh_1>:
+  100000:	10 60 1a ce 	vupklsh v3,v3
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_vupklsh_2>:
+  100008:	10 60 1a ce 	vupklsh v3,v3
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_vupklsh_3>:
+  100010:	10 60 1a ce 	vupklsh v3,v3
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_vupklsh_4>:
+  100018:	10 60 1a ce 	vupklsh v3,v3
+  10001c:	4e 80 00 20 	blr

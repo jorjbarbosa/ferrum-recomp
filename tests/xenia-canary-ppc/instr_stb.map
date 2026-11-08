@@ -1,0 +1,5 @@
+00000000 t test_stb_1
+00000008 t test_stb_offset
+00000010 t test_stbu_1
+00000018 t test_stbx_1
+00000020 t test_stbux_1

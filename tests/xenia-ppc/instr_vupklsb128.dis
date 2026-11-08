@@ -1,0 +1,9 @@
+Disassembly of section .text:
+
+00100000 <test_vupklsb128_1>:
+  100000:	18 60 1b c0 	vupklsb128 v3,v3
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_vupklsb128_2>:
+  100008:	18 60 1b c0 	vupklsb128 v3,v3
+  10000c:	4e 80 00 20 	blr

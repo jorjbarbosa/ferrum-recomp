@@ -1,0 +1,17 @@
+Disassembly of section .text:
+
+00100000 <test_rldiclx_1>:
+  100000:	78 83 46 21 	rldicl. r3,r4,8,56
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_rldiclx_2>:
+  100008:	78 83 84 21 	rldicl. r3,r4,16,48
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_rldiclx_3>:
+  100010:	78 83 00 21 	clrldi. r3,r4,32
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_rldiclx_4>:
+  100018:	78 83 00 23 	rldicl. r3,r4,32,32
+  10001c:	4e 80 00 20 	blr

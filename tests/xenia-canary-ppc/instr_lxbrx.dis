@@ -1,0 +1,25 @@
+Disassembly of section .text:
+
+00100000 <test_lhbrx_1>:
+  100000:	7c 64 2e 2c 	lhbrx   r3,r4,r5
+  100004:	4e 80 00 20 	blr
+
+00100008 <test_lhbrx_offset>:
+  100008:	7c 64 2e 2c 	lhbrx   r3,r4,r5
+  10000c:	4e 80 00 20 	blr
+
+00100010 <test_lwbrx_1>:
+  100010:	7c 64 2c 2c 	lwbrx   r3,r4,r5
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_lwbrx_offset>:
+  100018:	7c 64 2c 2c 	lwbrx   r3,r4,r5
+  10001c:	4e 80 00 20 	blr
+
+00100020 <test_ldbrx_1>:
+  100020:	7c 64 2c 28 	ldbrx   r3,r4,r5
+  100024:	4e 80 00 20 	blr
+
+00100028 <test_ldbrx_offset>:
+  100028:	7c 64 2c 28 	ldbrx   r3,r4,r5
+  10002c:	4e 80 00 20 	blr

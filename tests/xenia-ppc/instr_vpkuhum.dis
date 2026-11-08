@@ -1,0 +1,16 @@
+Disassembly of section .text:
+
+00100000 <test_vpkuhum_1>:
+  100000:	10 a3 20 0e 	vpkuhum v5,v3,v4
+  100004:	4e 80 00 20 	blr
+  100008:	4e 80 00 20 	blr
+
+0010000c <test_vpkuhum_2>:
+  10000c:	10 a3 20 0e 	vpkuhum v5,v3,v4
+  100010:	4e 80 00 20 	blr
+  100014:	4e 80 00 20 	blr
+
+00100018 <test_vpkuhum_3>:
+  100018:	10 a3 20 0e 	vpkuhum v5,v3,v4
+  10001c:	4e 80 00 20 	blr
+  100020:	4e 80 00 20 	blr
