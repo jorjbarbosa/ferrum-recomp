@@ -4,8 +4,9 @@
 //! Jump tables: the `bctr` that ends a `switch`.
 //!
 //! The instructions before a `bctr` are evaluated on symbolic register values, to tell whether CTR
-//! comes from an entry of a table at a constant address, read at an index that a bound check
-//! limits.
+//! comes from an entry of a table at a constant address, read at an index that something limits:
+//! a bound check on that straight run, or the interval that the analysis of the function's blocks
+//! gives the index at the load (`ranges`), whichever is tighter.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -13,10 +14,16 @@ use ferrum_decoder::{Insn, decode};
 
 use crate::code::Code;
 use crate::flow::{Flow, flow, links};
+use crate::ranges::{Range, Ranges};
 use crate::regs::gpr_writes;
 
 /// How many instructions before a `bctr` the evaluation looks at, at most.
 const RUN: usize = 32;
+
+/// The most entries a table may have. An interval that allows more, such as the `[0, mask]` of a
+/// left shift, is taken as no bound: no `switch` of the games studied comes near, and reading
+/// that many entries would only find targets outside the function.
+const MAX_ENTRIES: u32 = 1 << 16;
 
 /// The SPR number of CTR.
 const CTR: u16 = 9;
@@ -50,6 +57,10 @@ struct Load {
     size: u8,
     index: u32,
     shift: u8,
+    /// The address of the indexed load.
+    at: u32,
+    /// The GPR that holds the index, scaled by the size of an entry, at the load.
+    reg: u8,
 }
 
 /// What the evaluation knows about a register.
@@ -144,9 +155,9 @@ impl State {
                 ra, rs, sh, mb, me, ..
             } => (ra.0, self.rotate(rs.0, sh, mb, me)),
             Insn::Add { rt, ra, rb, .. } => (rt.0, self.add(ra.0, rb.0)),
-            Insn::Lwzx { rt, ra, rb } => (rt.0, self.load(ra.0, rb.0, 4)),
-            Insn::Lhzx { rt, ra, rb } => (rt.0, self.load(ra.0, rb.0, 2)),
-            Insn::Lbzx { rt, ra, rb } => (rt.0, self.load(ra.0, rb.0, 1)),
+            Insn::Lwzx { rt, ra, rb } => (rt.0, self.load(ra.0, rb.0, 4, addr)),
+            Insn::Lhzx { rt, ra, rb } => (rt.0, self.load(ra.0, rb.0, 2, addr)),
+            Insn::Lbzx { rt, ra, rb } => (rt.0, self.load(ra.0, rb.0, 1, addr)),
             Insn::Mtspr { spr: CTR, rs } => {
                 self.ctr = self.gpr[usize::from(rs.0)];
                 return;
@@ -239,24 +250,26 @@ impl State {
         }
     }
 
-    /// An indexed load of `size` bytes: a table entry when one operand is a constant and the
-    /// other an unknown scaled by the size.
-    fn load(&mut self, ra: u8, rb: u8, size: u8) -> Value {
+    /// An indexed load of `size` bytes at `at`: a table entry when one operand is a constant and
+    /// the other an unknown scaled by the size.
+    fn load(&mut self, ra: u8, rb: u8, size: u8, at: u32) -> Value {
         let scale = size.trailing_zeros() as u8;
-        let entry = |table: Value, index: Value| match (table, index) {
+        let entry = |table: Value, index: Value, reg: u8| match (table, index) {
             (Value::Const(table), Value::Unknown { id, shift }) if shift == scale => {
                 Some(Value::Entry(Load {
                     table,
                     size,
                     index: id,
                     shift: 0,
+                    at,
+                    reg,
                 }))
             }
             _ => None,
         };
         let (a, b) = (self.base(ra), self.gpr[usize::from(rb)]);
-        entry(a, b)
-            .or_else(|| (ra != 0).then(|| entry(b, a)).flatten())
+        entry(a, b, rb)
+            .or_else(|| (ra != 0).then(|| entry(b, a, ra)).flatten())
             .unwrap_or_else(|| self.fresh())
     }
 
@@ -292,7 +305,7 @@ impl State {
 }
 
 /// MASK(mb + 32, me + 32) of the ISA, on the low word.
-fn mask32(mb: u8, me: u8) -> u32 {
+pub(crate) fn mask32(mb: u8, me: u8) -> u32 {
     let from_mb = u32::MAX >> mb;
     let to_me = u32::MAX << (31 - me);
     if mb <= me {
@@ -338,14 +351,16 @@ fn read(code: &Code<'_>, load: &Load, index: u32) -> Option<u32> {
 
 /// Works out what the `bctr` at `bctr` is, looking no further back than `floor`. `joins` are the
 /// addresses that branches of the function target: another path enters there, so the evaluation
-/// forgets what it knew. `entries`, from `[analysis] jump_tables`, replaces the count of a bound
-/// check.
+/// forgets what it knew. The count of entries is the tighter of the bound check of the straight
+/// run and of the interval `ranges` gives the index at the load; `entries`, from
+/// `[analysis] jump_tables`, replaces both.
 pub(crate) fn detect(
     code: &Code<'_>,
     floor: u32,
     bctr: u32,
     joins: &BTreeSet<u32>,
     entries: Option<u32>,
+    ranges: Option<&Ranges<'_>>,
 ) -> Detection {
     let mut state = State::new();
     for (index, (addr, insn)) in run(code, floor, bctr).into_iter().enumerate() {
@@ -359,7 +374,17 @@ pub(crate) fn detect(
         Value::Sum { base, load } => (base, load),
         _ => return Detection::Indirect,
     };
-    let Some(count) = entries.or_else(|| state.bounds.get(&load.index).copied()) else {
+    let checked = state.bounds.get(&load.index).copied();
+    let ranged = ranges.and_then(|ranges| match ranges.before(load.at, load.reg) {
+        // The GPR holds the index scaled by the size of an entry.
+        Range::Span(_, hi) => (hi >> load.size.trailing_zeros()).checked_add(1),
+        Range::Unknown => None,
+    });
+    let bound = match (checked, ranged) {
+        (Some(checked), Some(ranged)) => Some(checked.min(ranged)),
+        (checked, ranged) => checked.or(ranged),
+    };
+    let Some(count) = entries.or(bound.filter(|&count| count <= MAX_ENTRIES)) else {
         return Detection::Unresolved;
     };
     let targets: Option<Vec<u32>> = (0..count)

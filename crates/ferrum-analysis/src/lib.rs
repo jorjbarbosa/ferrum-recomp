@@ -25,6 +25,7 @@ mod error;
 mod flow;
 mod jump_table;
 mod non_local;
+mod ranges;
 mod regs;
 mod save_restore;
 

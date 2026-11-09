@@ -25,6 +25,7 @@ fn detect_in(bytes: &[u8], bctr: u32, entries: Option<u32>) -> Detection {
         bctr,
         &BTreeSet::new(),
         entries,
+        None,
     )
 }
 
@@ -182,7 +183,7 @@ fn the_run_stops_at_an_unconditional_branch_and_at_the_floor() {
     let code = Code::new(BASE, &bytes);
     let joins = BTreeSet::new();
     assert_eq!(
-        detect(&code, BASE + 8, bctr, &joins, None),
+        detect(&code, BASE + 8, bctr, &joins, None, None),
         Detection::Unresolved
     );
 }
@@ -196,7 +197,7 @@ fn a_path_that_joins_after_the_bound_check_loses_it() {
     let code = Code::new(BASE, &bytes);
     let joins = BTreeSet::from([BASE + 8]);
     assert_eq!(
-        detect(&code, BASE, bctr, &joins, None),
+        detect(&code, BASE, bctr, &joins, None, None),
         Detection::Unresolved
     );
     // A join at the bound check changes nothing.
@@ -206,7 +207,7 @@ fn a_path_that_joins_after_the_bound_check_loses_it() {
     let code = Code::new(BASE, &bytes);
     let joins = BTreeSet::from([BASE + 4]);
     assert!(matches!(
-        detect(&code, BASE, bctr, &joins, None),
+        detect(&code, BASE, bctr, &joins, None, None),
         Detection::Table(_)
     ));
 }
@@ -221,13 +222,13 @@ fn a_constant_from_another_path_is_forgotten_at_the_join() {
     let (bytes, bctr) = image(&insns, &words(&[BASE; 3]));
     let code = Code::new(BASE, &bytes);
     assert_eq!(
-        detect(&code, BASE, bctr, &BTreeSet::new(), None),
+        detect(&code, BASE, bctr, &BTreeSet::new(), None, None),
         Detection::Indirect,
         "without the join, r10 looks constant"
     );
     let joins = BTreeSet::from([BASE + 4]);
     assert!(matches!(
-        detect(&code, BASE, bctr, &joins, None),
+        detect(&code, BASE, bctr, &joins, None, None),
         Detection::Table(_)
     ));
 }

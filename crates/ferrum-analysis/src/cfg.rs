@@ -11,6 +11,7 @@ use crate::code::Code;
 use crate::error::Error;
 use crate::flow::{Flow, Target, branch_target, flow, is_unconditional, links};
 use crate::jump_table::{self, Detection, JumpTable};
+use crate::ranges;
 
 #[cfg(test)]
 mod tests;
@@ -186,19 +187,33 @@ struct Walk<'r> {
     bctrs: BTreeSet<u32>,
     tables: BTreeMap<u32, JumpTable>,
     unresolved: BTreeSet<u32>,
+    /// How many times `settle` decided the tables, the last time finding nothing new unless it ran
+    /// out of rounds.
+    rounds: usize,
 }
 
 impl<'r> Walk<'r> {
     /// Walks `function` until its jump tables settle. A table is decided on the paths of the walk
-    /// before it, whose joins its evaluation needs, and its targets open more paths, so the walk
-    /// runs again until the decisions stop changing. The joins of every walk are kept, so that a
-    /// table that a later join leaves unbounded stays unresolved.
+    /// before it, whose joins and intervals its evaluation needs, and its targets open more paths,
+    /// so the walk runs again until the decisions stop changing. The joins of every walk are kept,
+    /// and a table found unresolved stays so in the later rounds: more paths only widen the
+    /// intervals, and a table that went back and forth would keep the walk from settling.
     fn settle(code: &Code<'_>, function: Function, rules: &'r Rules) -> Result<Self, Error> {
         let mut decided = BTreeMap::new();
         let mut walk = Self::run(code, function, rules, &decided)?;
         let mut joins = walk.joins.clone();
+        let mut unresolved = BTreeSet::new();
+        let mut rounds = 0;
         for _ in 0..TABLE_ROUNDS {
-            let next = walk.decide(code, &joins);
+            rounds += 1;
+            let mut next = walk.decide(code, &joins);
+            for (&bctr, decision) in &mut next {
+                if unresolved.contains(&bctr) {
+                    *decision = Decided::Unresolved;
+                } else if *decision == Decided::Unresolved {
+                    unresolved.insert(bctr);
+                }
+            }
             if next == decided {
                 break;
             }
@@ -206,27 +221,52 @@ impl<'r> Walk<'r> {
             walk = Self::run(code, function, rules, &decided)?;
             joins.extend(walk.joins.iter().copied());
         }
+        walk.rounds = rounds;
         Ok(walk)
     }
 
-    /// Decides every `bctr` the walk reached, with `joins` as the joins of the function.
+    /// Decides every `bctr` the walk reached, with `joins` as the joins of the function and the
+    /// intervals of the GPRs over the blocks of the walk.
     fn decide(&self, code: &Code<'_>, joins: &BTreeSet<u32>) -> BTreeMap<u32, Decided> {
         let mut decided = BTreeMap::new();
+        if self.bctrs.is_empty() {
+            // Most functions have no table: the intervals would answer no question.
+            return decided;
+        }
+        let blocks: Vec<Block> = self
+            .leaders
+            .iter()
+            .map(|&start| self.block(start))
+            .collect();
+        let tables: BTreeMap<u32, Vec<u32>> = self
+            .tables
+            .iter()
+            .map(|(&bctr, table)| (bctr, table.targets.clone()))
+            .collect();
+        let externals: BTreeSet<u32> = self
+            .rules
+            .joins
+            .iter()
+            .copied()
+            .filter(|&addr| self.function.contains(addr))
+            .collect();
+        let ranges = ranges::analyze(self.function, &blocks, &tables, &externals);
         for &bctr in &self.bctrs {
             let entries = self.rules.table_entries.get(&bctr).copied();
-            let decision = match jump_table::detect(code, self.function.addr, bctr, joins, entries)
-            {
-                Detection::Table(table)
-                    if table
-                        .targets
-                        .iter()
-                        .all(|&to| to.is_multiple_of(4) && self.function.contains(to)) =>
-                {
-                    Decided::Table(table)
-                }
-                Detection::Table(_) | Detection::Unresolved => Decided::Unresolved,
-                Detection::Indirect => continue,
-            };
+            let floor = self.function.addr;
+            let decision =
+                match jump_table::detect(code, floor, bctr, joins, entries, Some(&ranges)) {
+                    Detection::Table(table)
+                        if table
+                            .targets
+                            .iter()
+                            .all(|&to| to.is_multiple_of(4) && self.function.contains(to)) =>
+                    {
+                        Decided::Table(table)
+                    }
+                    Detection::Table(_) | Detection::Unresolved => Decided::Unresolved,
+                    Detection::Indirect => continue,
+                };
             decided.insert(bctr, decision);
         }
         decided
@@ -248,6 +288,7 @@ impl<'r> Walk<'r> {
             bctrs: BTreeSet::new(),
             tables: BTreeMap::new(),
             unresolved: BTreeSet::new(),
+            rounds: 0,
         };
         let mut pending = vec![function.addr];
         for &join in rules.joins.range(function.addr..) {

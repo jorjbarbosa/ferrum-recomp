@@ -20,14 +20,16 @@ emitter, then `cargo check` of the output with no error.
 
 | Game | Functions | Instructions | Jump tables | Crates | `cargo check`, cold |
 |---|---:|---:|---|---:|---:|
-| Naruto: Rise of a Ninja | 24,087 | 1,573,110 | 349, all resolved | 242 | 2 min 31 s |
-| Naruto: The Broken Bond | 32,440 | 2,931,352 | 419 resolved, 52 not | 326 | 4 min 4 s |
-| Need for Speed: Most Wanted (USA) | 56,276 | 2,030,116 | 491 resolved, 36 not | 564 | 1 min 34 s |
+| Naruto: Rise of a Ninja | 24,094 | 1,573,119 | 348 resolved, 1 not | 242 | 2 min 27 s |
+| Naruto: The Broken Bond | 32,440 | 2,946,910 | 464 resolved, 7 not | 326 | 5 min 29 s |
+| Need for Speed: Most Wanted (USA) | 56,276 | 2,032,502 | 500 resolved, 28 not | 564 | 1 min 33 s |
 
-The config of the first names `setjmp`, `longjmp` and the entry counts of 16 jump tables whose
-bound check the analysis cannot see. The other two used a config with only the executable and the
-output, so each table left unresolved becomes a lookup in the function table at run time. The
-times are from one Windows desktop and only show the order of magnitude.
+Each config names only the executable, the output and the crate name: the analysis finds `setjmp`
+and `longjmp` in all three. Most jump tables left unresolved have no bound check anywhere in the
+code, such as a `switch` on an argument the compiler trusts, and a few hold other functions'
+entries. Each becomes a lookup in the function table at run time, unless the config gives its entry
+count. The times are from one Windows desktop and only
+show the order of magnitude.
 
 ## How it works
 
@@ -40,8 +42,9 @@ times are from one Windows desktop and only show the order of magnitude.
    branch targets (second entries into a function included), pointers in data, a sweep of the gaps
    and the overrides of the config. It finds the functions that never return, splits each function
    into basic blocks, recognizes the register save and restore routines and the C runtime's
-   `setjmp` and `longjmp` by what they do, and resolves jump tables by evaluating the instructions
-   before each `bctr` on symbolic values.
+   `setjmp` and `longjmp` by what they do, and resolves jump tables: the instructions before each
+   `bctr` give the table, and the intervals of the registers over the function's blocks bound its
+   index, wherever the code checks it.
 4. **Generate.** `ferrum-codegen` writes each function as a `loop` over a `match` on the guest
    program counter, one arm per basic block. An instruction becomes a few statements over the guest
    context, the memory and the helpers of `ferrum-runtime`. Calls to import thunks become calls to

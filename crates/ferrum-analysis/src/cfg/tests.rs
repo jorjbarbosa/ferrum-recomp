@@ -244,25 +244,42 @@ fn a_call_that_never_returns_ends_its_path() {
 }
 
 #[test]
-fn a_case_that_branches_back_past_the_bound_check_leaves_the_table_unresolved() {
+fn a_case_that_branches_back_past_the_bound_check_keeps_the_table_only_if_the_index_stays_bounded()
+{
     // The table resolves on the first walk; its first case then branches back to the lis after
-    // the bgt, a path the bound check does not cover, and the next walk gives the table up.
+    // the bgt, a path the bound check does not cover. If that case loads r10 from memory first,
+    // the index is unbounded there, and the next walk gives the table up.
     let table = BASE + 0x20;
     let mut insns = vec![cmplwi(6, 10, 1), bgt(6, 0x2C)];
     insns.extend(load_address(12, table));
     insns.extend([slwi(0, 10, 2), lwzx(0, 12, 0), mtctr(0), bctr()]);
-    let mut bytes = assemble(&insns);
-    bytes.extend((BASE + 0x28).to_be_bytes());
-    bytes.extend((BASE + 0x2C).to_be_bytes());
-    bytes.extend(assemble(&[b(-0x20, false), blr(), blr()]));
+    let program = |cases: &[Insn]| {
+        let mut bytes = assemble(&insns);
+        bytes.extend((BASE + 0x28).to_be_bytes());
+        bytes.extend((BASE + 0x2C).to_be_bytes());
+        bytes.extend(assemble(cases));
+        bytes
+    };
+    let bytes = program(&[lwz(10, 0, 3), b(-0x24, false), blr(), blr()]);
     let cfg = cfg_of(&bytes, bytes.len() as u32).unwrap();
     assert!(cfg.tables.is_empty());
     assert_eq!(cfg.unresolved, BTreeSet::from([BASE + 0x1C]));
+    // Given up, the table stays unresolved: otherwise the path back would vanish with its
+    // targets, the table would resolve again, and the walk would never settle.
+    let function = Function {
+        addr: BASE,
+        size: bytes.len() as u32,
+    };
+    let rules = Rules::default();
+    let walk = Walk::settle(&Code::new(BASE, &bytes), function, &rules).unwrap();
+    assert!(walk.rounds < TABLE_ROUNDS, "{} rounds", walk.rounds);
+    // If the case leaves r10 alone, the path back keeps it in [0, 1], and the table stays.
+    let bytes = program(&[b(-0x20, false), blr(), blr()]);
+    let cfg = cfg_of(&bytes, bytes.len() as u32).unwrap();
+    assert_eq!(cfg.tables.len(), 1);
+    assert!(cfg.unresolved.is_empty());
     // Without that branch the table stays.
-    let mut bytes = assemble(&insns);
-    bytes.extend((BASE + 0x28).to_be_bytes());
-    bytes.extend((BASE + 0x2C).to_be_bytes());
-    bytes.extend(assemble(&[blr(), blr(), blr()]));
+    let bytes = program(&[blr(), blr(), blr()]);
     let cfg = cfg_of(&bytes, bytes.len() as u32).unwrap();
     assert_eq!(cfg.tables.len(), 1);
 }
