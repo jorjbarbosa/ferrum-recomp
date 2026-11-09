@@ -12,6 +12,14 @@
 //! two edges of a conditional branch after a compare with an immediate. Whatever else writes a
 //! GPR makes it unknown; a call keeps the registers the ABI preserves. The analysis is
 //! conservative: what it leaves out costs precision, never an interval that a path could leave.
+//!
+//! Code built without optimization keeps its locals in the stack frame and reloads them before
+//! each use, so the GPR a compare checks is not the one that indexes the table: both are loads of
+//! the same word. The analysis also carries the words of the frame, at a displacement from r1,
+//! that a `stw` wrote and nothing changed since, and which GPRs still hold a copy of each, so that
+//! a branch narrows the word and every copy together. A store through any other base, a store of
+//! unknown address, a call, or a write to r1 forgets the frame: the word may have changed through
+//! a pointer to it.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -99,12 +107,28 @@ fn narrow(range: Range, relation: Relation, imm: u32) -> Option<Range> {
     (lo <= hi).then(|| Range::span(lo, hi))
 }
 
-/// What the analysis knows at one point: the GPRs, and for each CR field the GPR and the
-/// immediate of the compare that set it, while neither has changed since.
+/// The values both intervals hold, or `None` if they hold none in common.
+fn intersect(a: Range, b: Range) -> Option<Range> {
+    let (a, b) = (a.bounds(), b.bounds());
+    let (lo, hi) = (a.0.max(b.0), a.1.min(b.1));
+    (lo <= hi).then(|| Range::span(lo, hi))
+}
+
+/// The stack pointer.
+const SP: u8 = 1;
+
+/// What the analysis knows at one point: the GPRs, for each CR field the GPR and the immediate
+/// of the compare that set it while neither has changed since, the words of the stack frame by
+/// their displacement from r1, and for each GPR the frame word it is a copy of.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct State {
     gpr: [Range; 32],
     cr: [Option<(u8, u32)>; 8],
+    /// The interval of each frame word the analysis knows, none of them unknown.
+    frame: BTreeMap<i32, Range>,
+    /// The frame word each GPR equals, while neither has changed since a load or store made them
+    /// equal.
+    copy: [Option<i32>; 32],
 }
 
 impl State {
@@ -112,10 +136,13 @@ impl State {
         Self {
             gpr: [Range::Unknown; 32],
             cr: [None; 8],
+            frame: BTreeMap::new(),
+            copy: [None; 32],
         }
     }
 
-    /// The state that holds both: the union of each GPR, and the compares both agree on.
+    /// The state that holds both: the union of each GPR and frame word, and the compares and
+    /// copies both agree on.
     fn join(&self, other: &Self) -> Self {
         Self {
             gpr: std::array::from_fn(|reg| self.gpr[reg].join(other.gpr[reg])),
@@ -124,7 +151,68 @@ impl State {
                     .then_some(self.cr[field])
                     .flatten()
             }),
+            frame: self
+                .frame
+                .iter()
+                .filter_map(|(&disp, &range)| {
+                    let joined = range.join(*other.frame.get(&disp)?);
+                    (joined != Range::Unknown).then_some((disp, joined))
+                })
+                .collect(),
+            copy: std::array::from_fn(|reg| {
+                (self.copy[reg] == other.copy[reg])
+                    .then_some(self.copy[reg])
+                    .flatten()
+            }),
         }
+    }
+
+    /// The interval of the frame word at `disp`.
+    fn word(&self, disp: i32) -> Range {
+        self.frame.get(&disp).copied().unwrap_or(Range::Unknown)
+    }
+
+    /// Records that the frame word at `disp` holds `range`.
+    fn set_word(&mut self, disp: i32, range: Range) {
+        if range == Range::Unknown {
+            self.frame.remove(&disp);
+        } else {
+            self.frame.insert(disp, range);
+        }
+    }
+
+    /// Forgets the frame words that overlap the `size` bytes at `disp`, and the copies of them.
+    fn overwrite(&mut self, disp: i32, size: i32) {
+        let overlaps = |word: i32| word < disp + size && disp < word + 4;
+        self.frame.retain(|&word, _| !overlaps(word));
+        for copy in &mut self.copy {
+            if copy.is_some_and(overlaps) {
+                *copy = None;
+            }
+        }
+    }
+
+    /// Forgets the whole frame.
+    fn forget_frame(&mut self) {
+        self.frame.clear();
+        self.copy = [None; 32];
+    }
+
+    /// Narrows `reg` to the values in `range` and, when it is a copy of a frame word, the word and
+    /// its other copies with it. `None` if they hold no value in common.
+    fn restrict(&mut self, reg: u8, range: Range) -> Option<()> {
+        let reg = usize::from(reg);
+        self.gpr[reg] = intersect(self.gpr[reg], range)?;
+        if let Some(disp) = self.copy[reg] {
+            let word = intersect(self.word(disp), self.gpr[reg])?;
+            self.set_word(disp, word);
+            for other in 0..32 {
+                if self.copy[other] == Some(disp) {
+                    self.gpr[other] = intersect(self.gpr[other], word)?;
+                }
+            }
+        }
+        Some(())
     }
 
     /// The value of `ra` as a base or source of `addi`, where r0 reads as zero.
@@ -144,6 +232,8 @@ impl State {
                 self.gpr[reg] = Range::Unknown;
             }
             self.cr = [None; 8];
+            // The callee may write the frame through a pointer to a local.
+            self.forget_frame();
             return;
         }
         match *insn {
@@ -186,10 +276,28 @@ impl State {
             self.cr = [None; 8];
         }
         let value = self.value(insn);
+        // The frame word a load copies into a GPR, or a GPR an `mr` copies, before the writes.
+        let copied = match *insn {
+            Insn::Lwz { rt, d, ra } if ra.0 == SP => Some((rt.0, Some(i32::from(d)))),
+            Insn::Or { ra, rs, rb, .. } if rs == rb => Some((ra.0, self.copy[usize::from(rs.0)])),
+            _ => None,
+        };
+        match frame_store(insn) {
+            Store::Frame { disp, size } => {
+                self.overwrite(disp, size);
+                if let Insn::Stw { rs, .. } = *insn {
+                    self.set_word(disp, self.gpr[usize::from(rs.0)]);
+                    self.copy[usize::from(rs.0)] = Some(disp);
+                }
+            }
+            Store::Elsewhere => self.forget_frame(),
+            Store::None => {}
+        }
         let writes = gpr_writes(insn);
         for reg in 0..32u8 {
             if writes.contains(reg) {
                 self.gpr[usize::from(reg)] = Range::Unknown;
+                self.copy[usize::from(reg)] = None;
                 for field in &mut self.cr {
                     if matches!(*field, Some((compared, _)) if compared == reg) {
                         *field = None;
@@ -197,8 +305,17 @@ impl State {
                 }
             }
         }
+        if writes.contains(SP) {
+            // The words were relative to the old r1.
+            self.forget_frame();
+        }
         if let Some((reg, range)) = value {
             self.gpr[usize::from(reg)] = range;
+        }
+        if let Some((reg, copy)) = copied
+            && reg != SP
+        {
+            self.copy[usize::from(reg)] = copy;
         }
     }
 
@@ -222,8 +339,66 @@ impl State {
                 (rt.0, Range::Span(0, 0xFF))
             }
             Insn::Lhz { rt, .. } | Insn::Lhzx { rt, .. } => (rt.0, Range::Span(0, 0xFFFF)),
+            Insn::Lwz { rt, d, ra } if ra.0 == SP => (rt.0, self.word(i32::from(d))),
             _ => return None,
         })
+    }
+}
+
+/// What an instruction writes to memory, as far as the frame is concerned.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Store {
+    /// Nothing.
+    None,
+    /// The `size` bytes at r1 plus `disp`, with r1 left as it is.
+    Frame { disp: i32, size: i32 },
+    /// Memory that may be anywhere, the frame included.
+    Elsewhere,
+}
+
+/// What `insn` writes to memory. Every store and every cache instruction that changes memory
+/// (`dcbz`, `dcbz128`, `dcbi`, `dcba`) counts; their mnemonics are the ones that start with `st`,
+/// `dcbz`, `dcbi` or `dcba`, and `ecowx`. A store through r1 with a displacement and no update
+/// writes the frame; any other writes memory that may be anywhere.
+fn frame_store(insn: &Insn) -> Store {
+    let sp = |ra: ferrum_decoder::Gpr| ra.0 == SP;
+    match *insn {
+        Insn::Stb { d, ra, .. } if sp(ra) => Store::Frame {
+            disp: i32::from(d),
+            size: 1,
+        },
+        Insn::Sth { d, ra, .. } if sp(ra) => Store::Frame {
+            disp: i32::from(d),
+            size: 2,
+        },
+        Insn::Stw { d, ra, .. } | Insn::Stfs { d, ra, .. } if sp(ra) => Store::Frame {
+            disp: i32::from(d),
+            size: 4,
+        },
+        Insn::Stfd { d, ra, .. } if sp(ra) => Store::Frame {
+            disp: i32::from(d),
+            size: 8,
+        },
+        Insn::Std { ds, ra, .. } if sp(ra) => Store::Frame {
+            disp: i32::from(ds),
+            size: 8,
+        },
+        // stmw writes rs to r31, one word each.
+        Insn::Stmw { rs, d, ra } if sp(ra) => Store::Frame {
+            disp: i32::from(d),
+            size: 4 * (32 - i32::from(rs.0)),
+        },
+        _ => {
+            let mnemonic = insn.opcode().info().mnemonic;
+            let writes = ["st", "dcbz", "dcbi", "dcba", "ecowx"]
+                .iter()
+                .any(|prefix| mnemonic.starts_with(prefix));
+            if writes {
+                Store::Elsewhere
+            } else {
+                Store::None
+            }
+        }
     }
 }
 
@@ -419,13 +594,49 @@ fn along(mut state: State, insn: &Insn, edge: Edge) -> Option<State> {
         (2, false) => Relation::Ne,
         _ => return Some(state),
     };
-    let reg = usize::from(reg);
-    state.gpr[reg] = narrow(state.gpr[reg], relation, imm)?;
+    let narrowed = narrow(state.gpr[usize::from(reg)], relation, imm)?;
+    state.restrict(reg, narrowed)?;
     Some(state)
 }
 
-/// How many times the interval of a GPR at a block start may change before it becomes unknown.
+/// How many times the interval of a GPR or a frame word at a block start may change before it
+/// becomes unknown.
 const WIDEN_AFTER: u8 = 8;
+
+/// How many times each interval at a block start has changed.
+#[derive(Debug, Default)]
+struct Changes {
+    gpr: [u8; 32],
+    frame: BTreeMap<i32, u8>,
+}
+
+impl Changes {
+    /// Counts the intervals of `new` that differ from `old`, and makes unknown those that changed
+    /// too often. A frame word only shrinks the frame when it goes, so it cannot change forever.
+    fn widen(&mut self, new: &mut State, old: &State) {
+        for ((count, new), was) in self.gpr.iter_mut().zip(&mut new.gpr).zip(&old.gpr) {
+            if new != was {
+                *count = count.saturating_add(1);
+                if *count > WIDEN_AFTER {
+                    *new = Range::Unknown;
+                }
+            }
+        }
+        let mut widened = Vec::new();
+        for (&disp, range) in &new.frame {
+            if old.frame.get(&disp) != Some(range) {
+                let count = self.frame.entry(disp).or_insert(0);
+                *count = count.saturating_add(1);
+                if *count > WIDEN_AFTER {
+                    widened.push(disp);
+                }
+            }
+        }
+        for disp in widened {
+            new.frame.remove(&disp);
+        }
+    }
+}
 
 /// The intervals of the GPRs at the start of every block that a path reaches.
 #[derive(Debug)]
@@ -458,7 +669,7 @@ pub(crate) fn analyze<'b>(
             pending.insert(start);
         }
     }
-    let mut changes: BTreeMap<u32, [u8; 32]> = BTreeMap::new();
+    let mut changes: BTreeMap<u32, Changes> = BTreeMap::new();
     while let Some(start) = pending.pop_first() {
         let block = &blocks[index[&start]];
         let mut state = entry[&start].clone();
@@ -483,15 +694,7 @@ pub(crate) fn analyze<'b>(
                 if *old == merged {
                     continue;
                 }
-                let counts = changes.entry(to).or_insert([0; 32]);
-                for ((count, new), was) in counts.iter_mut().zip(&mut merged.gpr).zip(&old.gpr) {
-                    if new != was {
-                        *count = count.saturating_add(1);
-                        if *count > WIDEN_AFTER {
-                            *new = Range::Unknown;
-                        }
-                    }
-                }
+                changes.entry(to).or_default().widen(&mut merged, old);
             }
             entry.insert(to, merged);
             pending.insert(to);

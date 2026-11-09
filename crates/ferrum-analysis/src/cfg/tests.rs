@@ -322,3 +322,31 @@ fn a_join_from_outside_the_code_starts_a_block_that_no_path_reaches() {
     let cfg = build(&code, function, &rules).unwrap();
     assert_eq!(shape(&cfg), [(0, 2, Exit::Jump), (8, 2, Exit::Jump)]);
 }
+
+#[test]
+fn a_table_whose_index_is_checked_through_a_frame_word_resolves() {
+    // Code built without optimization reloads the index from the frame after the check, so only
+    // the word links the check to the load.
+    let table = BASE + 0x30;
+    let mut insns = vec![
+        stw(11, 80, 1),
+        lwz(11, 80, 1),
+        cmplwi(6, 11, 1),
+        // ble cr6 past the blr
+        bc(4, 4 * 6 + 1, 8),
+        blr(),
+        lwz(11, 80, 1),
+    ];
+    insns.extend(load_address(12, table));
+    insns.extend([slwi(0, 11, 2), lwzx(0, 12, 0), mtctr(0), bctr()]);
+    let mut bytes = assemble(&insns);
+    bytes.extend((BASE + 0x38).to_be_bytes());
+    bytes.extend((BASE + 0x3C).to_be_bytes());
+    bytes.extend(assemble(&[blr(), blr()]));
+    let cfg = cfg_of(&bytes, bytes.len() as u32).unwrap();
+    assert!(cfg.unresolved.is_empty());
+    assert_eq!(
+        cfg.tables[&(BASE + 0x2C)].targets,
+        [BASE + 0x38, BASE + 0x3C]
+    );
+}

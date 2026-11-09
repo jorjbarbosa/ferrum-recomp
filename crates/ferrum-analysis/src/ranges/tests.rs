@@ -5,7 +5,8 @@ use ferrum_decoder::{Gpr, Insn};
 
 use super::*;
 use crate::asm::{
-    addi, b, bc, bclr, bctr, blr, cmplwi, cmpwi, lbzx, li, load_address, lwzx, mtctr, nop, slwi,
+    addi, b, bc, bclr, bctr, blr, cmplwi, cmpwi, lbzx, li, load_address, lwz, lwzx, mtctr, nop,
+    slwi, stw,
 };
 use crate::cfg::{Rules, build};
 use crate::code::Code;
@@ -375,4 +376,94 @@ fn narrowing_follows_each_relation() {
     assert_eq!(narrow(ANY, Relation::Lt, 0), None);
     assert_eq!(narrow(Range::Span(7, 7), Relation::Ne, 7), None);
     assert_eq!(narrow(ANY, Relation::Le, 3), Some(Range::Span(0, 3)));
+}
+
+fn stb(rs: u8, d: i16, ra: u8) -> Insn {
+    Insn::Stb {
+        rs: Gpr(rs),
+        d,
+        ra: Gpr(ra),
+    }
+}
+
+fn stwu(rs: u8, d: i16, ra: u8) -> Insn {
+    Insn::Stwu {
+        rs: Gpr(rs),
+        d,
+        ra: Gpr(ra),
+    }
+}
+
+fn mr(ra: u8, rs: u8) -> Insn {
+    Insn::Or {
+        ra: Gpr(ra),
+        rs: Gpr(rs),
+        rb: Gpr(rs),
+        rc: false,
+    }
+}
+
+/// A local kept in the frame, as code built without optimization keeps it: stored, reloaded and
+/// checked, then reloaded again after `between` to index a table of halfwords. Returns the
+/// intervals of the reloaded index and of the scaled one.
+fn reloaded(between: Insn) -> [Range; 2] {
+    let code = insns(&[
+        stw(11, 80, 1),
+        lwz(11, 80, 1),
+        cmplwi(6, 11, 38),
+        ble(6, disp(3, 5)),
+        blr(),
+        between,
+        lwz(11, 80, 1),
+        slwi(0, 11, 1),
+        nop(),
+        blr(),
+    ]);
+    let ranges = query(&code, &[], &[(7, 11), (8, 0)]);
+    [ranges[0], ranges[1]]
+}
+
+#[test]
+fn a_check_on_a_reloaded_local_bounds_its_next_reload() {
+    assert_eq!(reloaded(nop()), [Range::Span(0, 38), Range::Span(0, 76)]);
+    // The GPR that held the old copy changes; the word stays.
+    assert_eq!(reloaded(addi(11, 11, 1))[0], Range::Span(0, 38));
+    // A byte store next to the word leaves it alone.
+    assert_eq!(reloaded(stb(3, 84, 1))[0], Range::Span(0, 38));
+}
+
+#[test]
+fn whatever_may_write_the_word_forgets_it() {
+    // A byte store into the word.
+    assert_eq!(reloaded(stb(3, 82, 1))[0], ANY);
+    // A store through another base, which may point into the frame.
+    assert_eq!(reloaded(stw(3, 0, 4))[0], ANY);
+    // A call, which may write the frame through a pointer to a local.
+    assert_eq!(reloaded(b(0x1000, true))[0], ANY);
+    // A new frame: the displacement now names another word.
+    assert_eq!(reloaded(stwu(1, -16, 1))[0], ANY);
+    // A store of another value.
+    assert_eq!(reloaded(stw(3, 80, 1))[0], ANY);
+}
+
+#[test]
+fn a_store_and_a_copy_carry_the_value_and_a_check_narrows_every_copy() {
+    let code = insns(&[
+        li(3, 7),
+        stw(3, 8, 1),
+        lwz(4, 8, 1),
+        // r5 and r6 are copies of the word at 16; the check on r6 narrows r5 and the word.
+        lwz(5, 16, 1),
+        mr(6, 5),
+        cmplwi(6, 6, 9),
+        bgt(6, disp(6, 10)),
+        lwz(7, 16, 1),
+        nop(),
+        blr(),
+        blr(),
+    ]);
+    assert_eq!(
+        query(&code, &[], &[(3, 4), (8, 5), (8, 7)]),
+        [Range::Span(7, 7), Range::Span(0, 9), Range::Span(0, 9)]
+    );
 }

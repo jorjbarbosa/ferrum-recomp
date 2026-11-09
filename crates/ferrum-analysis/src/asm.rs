@@ -87,6 +87,14 @@ pub(crate) fn lwz(rt: u8, d: i16, ra: u8) -> Insn {
     }
 }
 
+pub(crate) fn stw(rs: u8, d: i16, ra: u8) -> Insn {
+    Insn::Stw {
+        rs: Gpr(rs),
+        d,
+        ra: Gpr(ra),
+    }
+}
+
 pub(crate) fn nop() -> Insn {
     Insn::Ori {
         ra: Gpr(0),
