@@ -8,6 +8,7 @@ use ferrum_decoder::{CrBit, CrField, Fpr, Gpr, Insn};
 
 use super::{Emitter, emit};
 use crate::error::Error;
+use crate::program::ControlFlow;
 use crate::program::Program;
 
 /// The statements `insn` becomes, without indentation.
@@ -19,7 +20,7 @@ fn text(insn: Insn) -> String {
         size: 4,
     };
     let program = Program::new(Code::new(0x8200_0000, &bytes), [function], &routines);
-    let mut e = Emitter::new(&program, function, 0..=u32::MAX);
+    let mut e = Emitter::new(&program, function, 0..=u32::MAX, ControlFlow::Dispatch);
     emit(&mut e, 0x8200_0000, &insn).unwrap();
     let text = e.finish().unwrap();
     text.lines().map(str::trim).collect::<Vec<_>>().join("\n")
@@ -543,7 +544,7 @@ fn mtfsf_fields_after_version_2_02_are_invalid() {
             rc: false,
         },
     ] {
-        let mut e = Emitter::new(&program, function, 0..=u32::MAX);
+        let mut e = Emitter::new(&program, function, 0..=u32::MAX, ControlFlow::Dispatch);
         assert!(
             matches!(
                 emit(&mut e, 0x8200_0000, &insn),
@@ -575,7 +576,7 @@ fn a_floating_point_update_form_with_ra_zero_is_invalid() {
             rb: Gpr(4),
         },
     ] {
-        let mut e = Emitter::new(&program, function, 0..=u32::MAX);
+        let mut e = Emitter::new(&program, function, 0..=u32::MAX, ControlFlow::Dispatch);
         assert!(
             matches!(
                 emit(&mut e, 0x8200_0000, &insn),

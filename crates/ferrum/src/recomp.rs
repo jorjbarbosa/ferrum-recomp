@@ -14,8 +14,8 @@ use ferrum_analysis::{
     Code, Discovery, Function, Input, SaveRestore, discover, find_non_local, find_save_restore,
 };
 use ferrum_codegen::{
-    Error as CodegenError, Import, Layout, Library, NonLocal, OutputFile, Program, Statistics,
-    write_workspace,
+    ControlFlow, Error as CodegenError, Import, Layout, Library, NonLocal, OutputFile, Program,
+    Statistics, function_name, write_workspace,
 };
 use ferrum_xex::{Image, ImportKind, Xex};
 
@@ -100,8 +100,34 @@ pub fn run(path: &Path, strict: bool) -> Result<()> {
         })
         .with_imports(imports)
         .with_hooks(config.hooks.clone())
-        .with_trap_as_nop(config.trap_as_nop);
+        .with_trap_as_nop(config.trap_as_nop)
+        .with_control_flow(config.control_flow)
+        .with_dispatch(config.dispatch.iter().copied());
     let statistics = program.statistics()?;
+    for (addr, why) in &statistics.rejected {
+        eprintln!(
+            "warning: {}: its structured form was rejected, a bug of ferrum: {why}",
+            function_name(*addr)
+        );
+    }
+    // Under a dispatcher no function is structured, so none falls back for being too deep.
+    let deep = match config.control_flow {
+        ControlFlow::Structured => statistics.deep.as_slice(),
+        ControlFlow::Dispatch => &[],
+    };
+    for (addr, depth) in deep {
+        eprintln!(
+            "warning: {}: its structured code would nest {depth} deep, so it keeps the dispatcher",
+            function_name(*addr)
+        );
+    }
+    if strict && (!statistics.rejected.is_empty() || !deep.is_empty()) {
+        bail!(
+            "{} rejected structured form(s) and {} too deep treated as errors by --strict",
+            statistics.rejected.len(),
+            deep.len()
+        );
+    }
     let layout = Layout {
         name: config.crate_name.clone(),
         functions_per_crate: config.functions_per_crate,
@@ -127,6 +153,7 @@ pub fn run(path: &Path, strict: bool) -> Result<()> {
         setjmp,
         longjmp,
         statistics: &statistics,
+        control_flow: config.control_flow,
         files: &files,
         written,
         out: &config.out,
@@ -389,6 +416,7 @@ struct Summary<'a> {
     setjmp: Option<(u32, Origin)>,
     longjmp: Option<(u32, Origin)>,
     statistics: &'a Statistics,
+    control_flow: ControlFlow,
     files: &'a [OutputFile],
     written: usize,
     out: &'a Path,
@@ -416,6 +444,25 @@ impl Summary<'_> {
             "jump tables: {} resolved, {} unresolved",
             self.statistics.jump_tables, self.statistics.unresolved_tables
         );
+        println!(
+            "cycles with several entries: {} in {} functions, {} sites to their dispatch nodes",
+            self.statistics.dispatch_nodes,
+            self.statistics.irreducible_functions,
+            self.statistics.redirected_sites
+        );
+        if self.control_flow == ControlFlow::Structured {
+            let s = self.statistics;
+            println!(
+                "structured: {} functions, nesting at most {} braces deep; in dispatch form: {} \
+                 calling setjmp, {} listed, {} rejected, {} too deep",
+                s.structured_functions,
+                s.brace_depth,
+                s.setjmp_functions,
+                s.listed_functions,
+                s.rejected.len(),
+                s.deep.len()
+            );
+        }
         print_opcodes(self.statistics);
         let crates = self
             .files

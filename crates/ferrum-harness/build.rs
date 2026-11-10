@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Jorge Barbosa
 
 //! Generates Rust for the test files of the manifest and for the synthetic programs, into
-//! `OUT_DIR/suite.rs`.
+//! `OUT_DIR/suite.rs`, twice: with a dispatcher at the top of the file, and as structured code in
+//! its module `structured`, which holds the same names. The tests run both.
 
 #[path = "src/manifest.rs"]
 #[allow(dead_code)]
@@ -21,7 +22,8 @@ use std::{env, fs};
 
 use ferrum_analysis::{Code, Function, Input, Rules, discover, find_save_restore};
 use ferrum_codegen::{
-    Action, Hooks, Import, Library, MidAsm, NonLocal, Override, PRELUDE, Program, thunk_name,
+    Action, ControlFlow, Hooks, Import, Library, MidAsm, NonLocal, Override, PRELUDE, Program,
+    thunk_name,
 };
 
 use manifest::{Group, Manifest};
@@ -43,7 +45,16 @@ fn main() {
     }
     let text = fs::read_to_string(crate_dir.join("manifest.toml")).expect("manifest.toml");
     let manifest = Manifest::parse(&text).unwrap_or_else(|e| panic!("manifest.toml: {e}"));
+    let mut out = generate_all(&manifest, &tests, ControlFlow::Dispatch);
+    let structured = generate_all(&manifest, &tests, ControlFlow::Structured);
+    writeln!(out, "pub mod structured {{\n{structured}}}").unwrap();
+    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("set by Cargo"));
+    fs::write(out_dir.join("suite.rs"), out).expect("write suite.rs");
+}
 
+/// The modules of the test files and of the synthetic programs, generated with `control_flow`,
+/// and their tables `FILES` and `SYNTHETIC`.
+fn generate_all(manifest: &Manifest, tests: &Path, control_flow: ControlFlow) -> String {
     // Modules by directory, then the table of files.
     let mut modules: BTreeMap<String, String> = BTreeMap::new();
     let mut files = String::new();
@@ -61,7 +72,13 @@ fn main() {
             .filter(|table| table.file == *name)
             .map(|table| (CODE_BASE + table.bctr, table.entries))
             .collect();
-        let code = match generate(&tests.join(dir), stem, group.discovers(), counts) {
+        let code = match generate(
+            &tests.join(dir),
+            stem,
+            group.discovers(),
+            counts,
+            control_flow,
+        ) {
             Ok(generated) => {
                 let module = modules.entry(module_dir.clone()).or_default();
                 write_module(module, stem, &generated);
@@ -85,9 +102,8 @@ fn main() {
         "pub static FILES: &[crate::GeneratedFile] = &[\n{files}];"
     )
     .unwrap();
-    write_synthetic(&mut out);
-    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("set by Cargo"));
-    fs::write(out_dir.join("suite.rs"), out).expect("write suite.rs");
+    write_synthetic(&mut out, control_flow);
+    out
 }
 
 /// The generated functions of one file, their entries with the Rust path the table holds for
@@ -98,14 +114,15 @@ struct Generated {
     words: usize,
 }
 
-/// Generates the functions of one test file: one per `test_` symbol of its `.map`, or, with
-/// `discovers`, those that function discovery finds from the test symbols, with `counts` as the
-/// entry counts of jump tables.
+/// Generates the functions of one test file with `control_flow`: one per `test_` symbol of its
+/// `.map`, or, with `discovers`, those that function discovery finds from the test symbols, with
+/// `counts` as the entry counts of jump tables.
 fn generate(
     dir: &Path,
     stem: &str,
     discovers: bool,
     counts: BTreeMap<u32, u32>,
+    control_flow: ControlFlow,
 ) -> Result<Generated, String> {
     let bin = fs::read(dir.join(format!("{stem}.bin"))).map_err(|e| format!("{stem}.bin: {e}"))?;
     let map = fs::read_to_string(dir.join(format!("{stem}.map")))
@@ -119,10 +136,16 @@ fn generate(
         })
         .collect();
     if !discovers {
-        return generate_code(&bin, &functions, Rules::default(), Extras::default());
+        return generate_code(
+            &bin,
+            &functions,
+            Rules::default(),
+            Extras::default(),
+            control_flow,
+        );
     }
     let (functions, rules) = discover_functions(&bin, &functions, counts)?;
-    generate_code(&bin, &functions, rules, Extras::default())
+    generate_code(&bin, &functions, rules, Extras::default(), control_flow)
 }
 
 /// What a synthetic program wires besides its functions.
@@ -225,6 +248,7 @@ fn generate_code(
     functions: &[Function],
     rules: Rules,
     extras: Extras,
+    control_flow: ControlFlow,
 ) -> Result<Generated, String> {
     let code = Code::new(CODE_BASE, bin);
     let routines = find_save_restore(&code);
@@ -234,8 +258,22 @@ fn generate_code(
         .with_rules(rules)
         .with_non_local(extras.non_local)
         .with_imports(extras.imports)
-        .with_hooks(extras.hooks);
+        .with_hooks(extras.hooks)
+        .with_control_flow(control_flow);
     let mut text = program.generate().map_err(|e| e.to_string())?;
+    if control_flow == ControlFlow::Structured {
+        // A function that falls back to the dispatcher would test the wrong form, so in these
+        // small programs a rejected or too deep form is a failure.
+        let statistics = program.statistics().map_err(|e| e.to_string())?;
+        if let Some((addr, why)) = statistics.rejected.first() {
+            return Err(format!("structured form of {addr:#010x} rejected: {why}"));
+        }
+        if let Some((addr, depth)) = statistics.deep.first() {
+            return Err(format!(
+                "structured code of {addr:#010x} nests {depth} deep"
+            ));
+        }
+    }
     if has_imports {
         text.push_str(&format!(
             "pub mod imports {{\n{}}}\n",
@@ -279,8 +317,8 @@ fn write_module(out: &mut String, name: &str, generated: &Generated) {
     out.push_str("}\n");
 }
 
-/// The synthetic programs, which have to generate: they are ours.
-fn write_synthetic(out: &mut String) {
+/// The synthetic programs, generated with `control_flow`, which have to generate: they are ours.
+fn write_synthetic(out: &mut String, control_flow: ControlFlow) {
     let mut modules = String::new();
     let mut table = String::new();
     for program in synthetic::programs() {
@@ -297,7 +335,7 @@ fn write_synthetic(out: &mut String) {
             no_return: extras.non_local.longjmp.into_iter().collect(),
             ..Rules::default()
         };
-        let generated = generate_code(&program.bytes(), &functions, rules, extras)
+        let generated = generate_code(&program.bytes(), &functions, rules, extras, control_flow)
             .unwrap_or_else(|e| panic!("synthetic program {}: {e}", program.name));
         write_module(&mut modules, program.name, &generated);
         writeln!(

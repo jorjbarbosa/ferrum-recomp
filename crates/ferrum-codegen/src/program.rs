@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 // Copyright (c) 2026 Jorge Barbosa
 
-//! One generated Rust function per guest function: the `loop { match pc }` body, the branches that
-//! end its blocks, and calls.
+//! One generated Rust function per guest function: the code of its blocks, the branches that end
+//! them, and calls, in a `loop { match pc }` body or, through [`crate::structured`], as structured
+//! code.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::RangeInclusive;
 
 use ferrum_analysis::{
-    Cfg, Code, Exit, Family, Flow, Function, Rules, SaveRestore, Target, branch_target, build,
-    flow, links,
+    Block, Cfg, Code, Exit, Family, Flow, Function, Graph, Rules, SaveRestore, Structured, Target,
+    branch_target, build, flow, links, structure,
 };
 use ferrum_decoder::{Insn, decode, format_at};
 
 use crate::emit::{self, Emitter};
 use crate::error::Error;
-use crate::hooks::{Hooks, MidAsm};
+use crate::hooks::{Action, Hooks, MidAsm};
 use crate::imports::Import;
+use crate::sites::{self, SiteKind};
+use crate::structured::{self, MAX_BRACE_DEPTH, brace_depth};
 
 /// The `use` lines that generated functions need, for the module that holds them.
 pub const PRELUDE: &str = "use ferrum_runtime::{ops, Kernels, Memory, PpcContext, Spr};\n";
@@ -38,6 +41,19 @@ pub struct NonLocal {
     pub longjmp: Option<u32>,
 }
 
+/// How generated functions follow the guest's branches. A [`Program`] starts with a dispatcher;
+/// `ferrum recomp` asks for structured code unless its config says otherwise.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum ControlFlow {
+    /// A loop over a `match` on the address of the next block.
+    #[default]
+    Dispatch,
+    /// Labeled blocks, loops, `break`, `continue` and `if`, from the structured form of each
+    /// function. A function that calls `setjmp`, or whose form fails its check or nests deeper than
+    /// rustc can take, keeps the dispatcher.
+    Structured,
+}
+
 /// What the generated functions of a program hold.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Statistics {
@@ -47,6 +63,27 @@ pub struct Statistics {
     pub jump_tables: usize,
     /// How many `bctr`s load CTR from a table that could not be resolved.
     pub unresolved_tables: usize,
+    /// How many functions hold a cycle that several of their blocks enter, which the structured
+    /// form reaches through a dispatch node.
+    pub irreducible_functions: usize,
+    /// How many dispatch nodes those cycles take, one per cycle.
+    pub dispatch_nodes: usize,
+    /// How many sites go to a dispatch node instead of an entry of its cycle.
+    pub redirected_sites: usize,
+    /// The functions whose structured form the check rejected, by entry, with why: bugs of the
+    /// structuring, never of the guest code.
+    pub rejected: Vec<(u32, String)>,
+    /// The functions whose structured code would nest its braces deeper than generated code may,
+    /// by entry, with how deep.
+    pub deep: Vec<(u32, usize)>,
+    /// How deep the braces of the deepest structured function nest.
+    pub brace_depth: usize,
+    /// How many functions structured code writes in structured form.
+    pub structured_functions: usize,
+    /// How many functions call `setjmp`, which structured code keeps in dispatch form.
+    pub setjmp_functions: usize,
+    /// How many functions the program was told to keep in dispatch form.
+    pub listed_functions: usize,
 }
 
 /// The Rust path of the runtime's `longjmp`, which stands for the guest's.
@@ -67,6 +104,9 @@ pub struct Program<'a> {
     overridden: BTreeSet<u32>,
     midasm: BTreeMap<u32, Vec<MidAsm>>,
     trap_as_nop: bool,
+    control_flow: ControlFlow,
+    /// The functions kept in dispatch form whatever `control_flow` says.
+    dispatch: BTreeSet<u32>,
 }
 
 impl<'a> Program<'a> {
@@ -91,6 +131,8 @@ impl<'a> Program<'a> {
             overridden: BTreeSet::new(),
             midasm: BTreeMap::new(),
             trap_as_nop: false,
+            control_flow: ControlFlow::Dispatch,
+            dispatch: BTreeSet::new(),
         }
     }
 
@@ -129,6 +171,28 @@ impl<'a> Program<'a> {
     pub fn with_trap_as_nop(mut self, trap_as_nop: bool) -> Self {
         self.trap_as_nop = trap_as_nop;
         self
+    }
+
+    /// Generates the functions with `control_flow` (`[optimizations] control_flow`).
+    pub fn with_control_flow(mut self, control_flow: ControlFlow) -> Self {
+        self.control_flow = control_flow;
+        self
+    }
+
+    /// Keeps the functions that start at `entries` in dispatch form under structured code
+    /// (`[optimizations] dispatch`): a way around a bug of the structuring in one function.
+    pub fn with_dispatch(mut self, entries: impl IntoIterator<Item = u32>) -> Self {
+        self.dispatch = entries.into_iter().collect();
+        self
+    }
+
+    /// Checks that a function starts at every entry of the list of functions to keep in dispatch
+    /// form.
+    pub fn check_dispatch(&self) -> Result<(), Error> {
+        match self.dispatch.iter().find(|&&addr| !self.is_function(addr)) {
+            Some(&addr) => Err(Error::NotAFunction { addr }),
+            None => Ok(()),
+        }
     }
 
     /// The addresses that the hooks' jumps go to.
@@ -194,7 +258,7 @@ impl<'a> Program<'a> {
                 if self.non_local.longjmp == Some(function.addr) {
                     continue;
                 }
-                let cfg = build(&self.code, function, &self.rules)?;
+                let cfg = self.blocks(function)?;
                 let Some(&(at, insn)) = cfg
                     .blocks
                     .iter()
@@ -222,8 +286,9 @@ impl<'a> Program<'a> {
         Ok(())
     }
 
-    /// What the generated functions hold: the instructions of each mnemonic on their paths, and
-    /// their jump tables.
+    /// What the generated functions hold: the instructions of each mnemonic on their paths, their
+    /// jump tables, and the cycles that several of their blocks enter; and the functions whose
+    /// structured form failed its check.
     pub fn statistics(&self) -> Result<Statistics, Error> {
         let mut statistics = Statistics::default();
         for &function in self.functions.values() {
@@ -232,7 +297,7 @@ impl<'a> Program<'a> {
             {
                 continue;
             }
-            let cfg = build(&self.code, function, &self.rules)?;
+            let cfg = self.blocks(function)?;
             for &(_, insn) in cfg.blocks.iter().flat_map(|block| &block.insns) {
                 *statistics
                     .opcodes
@@ -241,6 +306,34 @@ impl<'a> Program<'a> {
             }
             statistics.jump_tables += cfg.tables.len();
             statistics.unresolved_tables += cfg.unresolved.len();
+            let kept = if self.calls_setjmp(&cfg) {
+                statistics.setjmp_functions += 1;
+                true
+            } else if self.dispatch.contains(&function.addr) {
+                statistics.listed_functions += 1;
+                true
+            } else {
+                false
+            };
+            match structure(&self.graph(function, &cfg)) {
+                Ok(structured) => {
+                    if structured.dispatch_nodes > 0 {
+                        statistics.irreducible_functions += 1;
+                        statistics.dispatch_nodes += structured.dispatch_nodes;
+                        statistics.redirected_sites += structured.redirected_sites;
+                    }
+                    let depth = brace_depth(&structured);
+                    if kept {
+                    } else if depth > MAX_BRACE_DEPTH {
+                        statistics.deep.push((function.addr, depth));
+                    } else {
+                        statistics.structured_functions += 1;
+                        statistics.brace_depth = statistics.brace_depth.max(depth);
+                    }
+                }
+                // A rejected form is a bug, even in a function kept in dispatch form.
+                Err(rejected) => statistics.rejected.push((function.addr, rejected.0)),
+            }
         }
         Ok(statistics)
     }
@@ -252,6 +345,7 @@ impl<'a> Program<'a> {
     /// counts over every function. Any other error stops at the first function that has it.
     pub fn generate(&self) -> Result<String, Error> {
         self.check_hooks()?;
+        self.check_dispatch()?;
         self.generate_part(0..=u32::MAX)
     }
 
@@ -295,10 +389,13 @@ impl<'a> Program<'a> {
     /// Generates one function, calling the functions whose entries lie in `local` directly and
     /// the others through the table.
     fn generate_in(&self, function: Function, local: RangeInclusive<u32>) -> Result<String, Error> {
-        let cfg = build(&self.code, function, &self.rules)?;
+        let cfg = self.blocks(function)?;
+        if let Some(structured) = self.structured(function, &cfg) {
+            return structured::generate(self, function, &cfg, &structured, local);
+        }
         let name = function_name(function.addr);
         let catches = self.calls_setjmp(&cfg);
-        let mut e = Emitter::new(self, function, local);
+        let mut e = Emitter::new(self, function, local, ControlFlow::Dispatch);
         e.line("#[inline(never)]");
         e.open(format!(
             "pub fn {name}(ctx: &mut PpcContext, mem: &Memory, k: &Kernels<'_>) {{"
@@ -316,33 +413,7 @@ impl<'a> Program<'a> {
         e.open("match pc {");
         for block in &cfg.blocks {
             e.open(format!("{:#010x} => {{", block.start));
-            let last = block.insns.len() - 1;
-            for (index, &(at, insn)) in block.insns.iter().enumerate() {
-                e.hooks(at, false);
-                e.line(format!("// {at:08x}: {}", format_at(&insn, at).trim_end()));
-                match flow(&insn, at) {
-                    Flow::Jump { .. } if cfg.tables.contains_key(&at) => {
-                        debug_assert_eq!(index, last, "a jump ends its block");
-                        // The guest code has loaded CTR from the table; the match goes to the
-                        // block, or to its last arm if the value is none.
-                        e.line("pc = ctx.ctr as u32;");
-                    }
-                    Flow::Jump {
-                        target,
-                        conditional,
-                    } => {
-                        debug_assert_eq!(index, last, "a jump ends its block");
-                        e.jump(at, &insn, target, conditional, block.exit)?;
-                    }
-                    Flow::Next if links(&insn) => e.call(at, &insn)?,
-                    Flow::Next => emit::emit(&mut e, at, &insn)?,
-                }
-                e.hooks(at, true);
-            }
-            let (at, insn) = block.insns[last];
-            if !matches!(flow(&insn, at), Flow::Jump { .. }) {
-                e.continue_to(block.exit);
-            }
+            self.block(&mut e, function, &cfg, block)?;
             e.close("}");
         }
         e.line(format!(
@@ -362,6 +433,62 @@ impl<'a> Program<'a> {
         e.finish()
     }
 
+    /// The structured form to generate `function` from, whose blocks are `cfg`: none under a
+    /// dispatcher, for a function that calls `setjmp`, whose `longjmp` resumes at a block by its
+    /// address, for a function in the dispatch list, or when the form fails its check or would
+    /// nest too deep, which [`Program::statistics`] lists.
+    fn structured(&self, function: Function, cfg: &Cfg) -> Option<Structured> {
+        if self.control_flow != ControlFlow::Structured
+            || self.calls_setjmp(cfg)
+            || self.dispatch.contains(&function.addr)
+        {
+            return None;
+        }
+        structure(&self.graph(function, cfg))
+            .ok()
+            .filter(|structured| brace_depth(structured) <= MAX_BRACE_DEPTH)
+    }
+
+    /// Writes the code of `block`, a block of `cfg`, into `e`: its instructions, the hooks at them,
+    /// and its transfers to its sites, in the way `e` writes them.
+    pub(crate) fn block(
+        &self,
+        e: &mut Emitter<'_>,
+        function: Function,
+        cfg: &Cfg,
+        block: &Block,
+    ) -> Result<(), Error> {
+        e.begin_block(block.start, sites::transfers(self, function, cfg, block));
+        let last = block.insns.len() - 1;
+        for (index, &(at, insn)) in block.insns.iter().enumerate() {
+            e.hooks(at, false);
+            e.line(format!("// {at:08x}: {}", format_at(&insn, at).trim_end()));
+            match flow(&insn, at) {
+                Flow::Jump { .. } if cfg.tables.contains_key(&at) => {
+                    debug_assert_eq!(index, last, "a jump ends its block");
+                    // The guest code has loaded CTR from the table.
+                    e.table(&cfg.tables[&at].targets);
+                }
+                Flow::Jump {
+                    target,
+                    conditional,
+                } => {
+                    debug_assert_eq!(index, last, "a jump ends its block");
+                    e.jump(at, &insn, target, conditional, block.exit)?;
+                }
+                Flow::Next if links(&insn) => e.call(at, &insn)?,
+                Flow::Next => emit::emit(e, at, &insn)?,
+            }
+            e.hooks(at, true);
+        }
+        let (at, insn) = block.insns[last];
+        if !matches!(flow(&insn, at), Flow::Jump { .. }) {
+            e.continue_to(block.exit);
+        }
+        e.end_block();
+        Ok(())
+    }
+
     /// Returns whether a path of the function calls `setjmp`.
     fn calls_setjmp(&self, cfg: &Cfg) -> bool {
         let Some(setjmp) = self.non_local.setjmp else {
@@ -370,6 +497,30 @@ impl<'a> Program<'a> {
         cfg.blocks.iter().flat_map(|b| &b.insns).any(|&(at, insn)| {
             links(&insn) && branch_target(&insn, at) == Some(Target::Address(setjmp))
         })
+    }
+
+    /// The basic blocks of `function`, with the rules of the program.
+    pub(crate) fn blocks(&self, function: Function) -> Result<Cfg, Error> {
+        Ok(build(&self.code, function, &self.rules)?)
+    }
+
+    /// The graph of `function`, whose blocks are `cfg`, for its structuring: the blocks the entry
+    /// reaches, each with the blocks its sites go to, in the order its code writes them.
+    pub(crate) fn graph(&self, function: Function, cfg: &Cfg) -> Graph {
+        let blocks: Vec<(u32, Vec<u32>)> = cfg
+            .blocks
+            .iter()
+            .map(|block| {
+                let sites = sites::transfers(self, function, cfg, block);
+                (block.start, sites.iter().map(|site| site.target).collect())
+            })
+            .collect();
+        Graph::from_blocks(&blocks)
+    }
+
+    /// The mid-asm hooks at the instruction at `at`, in the order of the config.
+    pub(crate) fn hooks_at(&self, at: u32) -> impl Iterator<Item = &MidAsm> {
+        self.midasm.get(&at).into_iter().flatten()
     }
 
     /// Returns whether a guest function starts at `addr`.
@@ -413,14 +564,31 @@ impl Emitter<'_> {
     /// The calls to the mid-asm hooks of the instruction at `at` that come before it, or after it
     /// with `after`.
     fn hooks(&mut self, at: u32, after: bool) {
-        let Some(hooks) = self.program.midasm.get(&at) else {
-            return;
-        };
-        for hook in hooks.iter().filter(|hook| hook.after == after) {
+        let program = self.program;
+        for hook in program.hooks_at(at).filter(|hook| hook.after == after) {
             self.line(format!("// hook {}", hook.name));
-            for statement in hook.statements() {
+            if let (ControlFlow::Structured, Action::JumpIfTrue(to)) =
+                (self.control_flow, hook.action)
+            {
+                // The site's code may be a whole block, so it gets lines of its own.
+                self.open(format!("if {} {{", hook.call()));
+                for statement in self.goto(SiteKind::Hook, to, true) {
+                    self.line(statement);
+                }
+                self.close("}");
+                continue;
+            }
+            for statement in hook.statements(|to| self.goto(SiteKind::Hook, to, true)) {
                 self.line(statement);
             }
+        }
+    }
+
+    /// Writes the transfer of the next site of the block, a transfer of `kind` to `target`, the
+    /// last code of the block.
+    fn go(&mut self, kind: SiteKind, target: u32) {
+        for statement in self.goto(kind, target, false) {
+            self.line(statement);
         }
     }
 
@@ -428,7 +596,7 @@ impl Emitter<'_> {
     fn continue_to(&mut self, exit: Exit) {
         let name = function_name(self.function.addr);
         match exit {
-            Exit::Next(next) => self.line(format!("pc = {next:#010x};")),
+            Exit::Next(next) => self.go(SiteKind::Next, next),
             Exit::FallOff => match u32::try_from(self.function.end()) {
                 // Running into another function is what the hardware does: a tail call.
                 Ok(next) if self.program.is_function(next) => {
@@ -459,11 +627,22 @@ impl Emitter<'_> {
         debug_assert_eq!(condition.is_some(), conditional);
         match (target, condition) {
             (Target::Address(to), None) if self.function.contains(to) => {
-                self.line(format!("pc = {to:#010x};"));
+                self.go(SiteKind::Branch, to);
+            }
+            (Target::Address(to), Some(condition))
+                if self.function.contains(to) && self.control_flow == ControlFlow::Structured =>
+            {
+                // The taken side ends in a transfer, so the other side needs no `else`.
+                self.open(format!("if {condition} {{"));
+                for statement in self.goto(SiteKind::Branch, to, true) {
+                    self.line(statement);
+                }
+                self.close("}");
+                self.continue_to(exit);
             }
             (Target::Address(to), Some(condition)) if self.function.contains(to) => {
                 self.open(format!("if {condition} {{"));
-                self.line(format!("pc = {to:#010x};"));
+                self.go(SiteKind::Branch, to);
                 self.reopen("} else {");
                 self.continue_to(exit);
                 self.close("}");

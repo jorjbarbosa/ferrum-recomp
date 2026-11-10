@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};
 use ferrum_analysis::Function;
-use ferrum_codegen::{Action, DEFAULT_FUNCTIONS_PER_CRATE, Hooks, MidAsm, Override};
+use ferrum_codegen::{Action, ControlFlow, DEFAULT_FUNCTIONS_PER_CRATE, Hooks, MidAsm, Override};
 use serde::Deserialize;
 
 /// A recompilation config, with its paths resolved against the directory of its file.
@@ -39,6 +39,10 @@ pub struct Config {
     pub hooks: Hooks,
     /// `[optimizations] trap_as_nop`.
     pub trap_as_nop: bool,
+    /// `[optimizations] control_flow`.
+    pub control_flow: ControlFlow,
+    /// `[optimizations] dispatch`: functions kept in dispatch form, by entry.
+    pub dispatch: Vec<u32>,
 }
 
 #[derive(Deserialize)]
@@ -123,6 +127,9 @@ struct Optimizations {
     locals: bool,
     #[serde(default)]
     trap_as_nop: bool,
+    control_flow: Option<String>,
+    #[serde(default)]
+    dispatch: Vec<u32>,
 }
 
 impl Config {
@@ -141,6 +148,13 @@ impl Config {
         if file.optimizations.locals {
             bail!("[optimizations] locals is not implemented");
         }
+        let control_flow = match file.optimizations.control_flow.as_deref() {
+            Some("dispatch") => ControlFlow::Dispatch,
+            None | Some("structured") => ControlFlow::Structured,
+            Some(other) => bail!(
+                "[optimizations] control_flow is \"dispatch\" or \"structured\", not {other:?}"
+            ),
+        };
         let span = |span: &Span| Function {
             addr: span.addr,
             size: span.size,
@@ -186,6 +200,8 @@ impl Config {
             longjmp: file.analysis.longjmp,
             hooks: Hooks { overrides, midasm },
             trap_as_nop: file.optimizations.trap_as_nop,
+            control_flow,
+            dispatch: file.optimizations.dispatch,
         })
     }
 }
@@ -212,6 +228,7 @@ crate_name = "game-ppc"
         assert!(config.functions.is_empty() && config.table_entries.is_empty());
         assert_eq!(config.hooks, Hooks::default());
         assert!(!config.trap_as_nop);
+        assert_eq!(config.control_flow, ControlFlow::Structured);
     }
 
     #[test]
@@ -235,6 +252,8 @@ midasm = [
 
 [optimizations]
 trap_as_nop = true
+control_flow = "dispatch"
+dispatch = [0x82001000, 0x82002000]
 "#
         );
         let config = Config::parse(&text, Path::new("")).unwrap();
@@ -260,6 +279,8 @@ trap_as_nop = true
         );
         assert!(config.hooks.midasm[1].after);
         assert!(config.trap_as_nop);
+        assert_eq!(config.control_flow, ControlFlow::Dispatch);
+        assert_eq!(config.dispatch, [0x8200_1000, 0x8200_2000]);
     }
 
     #[test]
@@ -278,6 +299,12 @@ trap_as_nop = true
             .contains("no hook action")
         );
         assert!(error("[main]\nxex = \"a\"\n").contains("missing field"));
+        assert!(
+            error(&format!(
+                "{MINIMAL}[optimizations]\ncontrol_flow = \"relooper\"\n"
+            ))
+            .contains("not \"relooper\"")
+        );
     }
 
     #[test]

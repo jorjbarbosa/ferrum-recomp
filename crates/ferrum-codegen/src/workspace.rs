@@ -69,6 +69,7 @@ impl Program<'_> {
     pub fn workspace(&self, layout: &Layout) -> Result<Vec<OutputFile>, Error> {
         check_name(&layout.name)?;
         self.check_hooks()?;
+        self.check_dispatch()?;
         if layout.functions_per_crate == 0 {
             return Err(invalid("functions_per_crate is zero"));
         }

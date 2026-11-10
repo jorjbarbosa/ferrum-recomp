@@ -4,10 +4,13 @@
 //! Rust code generation: turns guest functions into Rust source text.
 //!
 //! [`Program`] holds the guest code, the functions in it and its save and restore routines, and
-//! generates one Rust function per guest function, named by [`function_name`]: a `loop { match pc
-//! { ... } }` body with one arm per basic block from `ferrum-analysis`. Each instruction becomes a
-//! few statements over the context, the memory and the helpers of `ferrum-runtime`; [`PRELUDE`]
-//! has the `use` lines they need. The generated code contains no `unsafe`.
+//! generates one Rust function per guest function, named by [`function_name`], from the basic
+//! blocks of `ferrum-analysis`. [`ControlFlow`] says how the function follows the guest's
+//! branches: a `loop { match pc { ... } }` with one arm per block, or structured code, with
+//! labeled blocks, loops, `break`, `continue` and `if`, from the function's structured form. Each
+//! instruction becomes a few statements over the context, the memory and the helpers of
+//! `ferrum-runtime`; [`PRELUDE`] has the `use` lines they need. The generated code contains no
+//! `unsafe`.
 //!
 //! The conventions of generated code: LR is written before a call, branches out of a function
 //! are tail calls, calls into save and restore routines are inlined, and arithmetic follows 32-bit
@@ -29,6 +32,8 @@ mod error;
 mod hooks;
 mod imports;
 mod program;
+mod sites;
+mod structured;
 mod workspace;
 
 #[cfg(test)]
@@ -37,5 +42,5 @@ mod tests;
 pub use error::Error;
 pub use hooks::{Action, Hooks, MidAsm, Override};
 pub use imports::{Import, Library, thunk_name};
-pub use program::{NonLocal, PRELUDE, Program, Statistics, function_name};
+pub use program::{ControlFlow, NonLocal, PRELUDE, Program, Statistics, function_name};
 pub use workspace::{DEFAULT_FUNCTIONS_PER_CRATE, Layout, OutputFile, PROFILE, write_workspace};

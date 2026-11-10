@@ -76,23 +76,29 @@ pub struct MidAsm {
 }
 
 impl MidAsm {
-    /// The statements that call the hook and act on what it returns.
-    pub(crate) fn statements(&self) -> Vec<String> {
-        let call = format!(
+    /// The expression that calls the hook, which returns whether a conditional action acts.
+    pub(crate) fn call(&self) -> String {
+        format!(
             "k.hooks.call({:#010x}, {:?}, ctx, mem, k)",
             self.addr, self.name
-        );
+        )
+    }
+
+    /// The statements that call the hook and act on what it returns. For the jump actions, `goto`
+    /// gives the statements that go to the address of the function.
+    pub(crate) fn statements(&self, goto: impl FnOnce(u32) -> Vec<String>) -> Vec<String> {
+        let call = self.call();
         match self.action {
             Action::Continue => vec![format!("{call};")],
             Action::Return => vec![format!("{call};"), "return;".to_owned()],
-            Action::Jump(to) => vec![
-                format!("{call};"),
-                format!("pc = {to:#010x};"),
-                "continue;".to_owned(),
-            ],
+            Action::Jump(to) => {
+                let mut statements = vec![format!("{call};")];
+                statements.extend(goto(to));
+                statements
+            }
             Action::ReturnIfTrue => vec![format!("if {call} {{ return; }}")],
             Action::JumpIfTrue(to) => {
-                vec![format!("if {call} {{ pc = {to:#010x}; continue; }}")]
+                vec![format!("if {call} {{ {} }}", goto(to).join(" "))]
             }
         }
     }
@@ -183,13 +189,18 @@ mod tests {
             action,
         };
         let call = "k.hooks.call(0x82001008, \"fix_fov\", ctx, mem, k)";
-        assert_eq!(hook(Action::Continue).statements(), [format!("{call};")]);
+        // The statements of a jump come from the caller; these are the dispatcher's.
+        let goto = |to: u32| vec![format!("pc = {to:#010x};"), "continue;".to_owned()];
         assert_eq!(
-            hook(Action::Return).statements(),
+            hook(Action::Continue).statements(goto),
+            [format!("{call};")]
+        );
+        assert_eq!(
+            hook(Action::Return).statements(goto),
             [format!("{call};"), "return;".to_owned()]
         );
         assert_eq!(
-            hook(Action::Jump(0x8200_100C)).statements(),
+            hook(Action::Jump(0x8200_100C)).statements(goto),
             [
                 format!("{call};"),
                 "pc = 0x8200100c;".to_owned(),
@@ -197,11 +208,11 @@ mod tests {
             ]
         );
         assert_eq!(
-            hook(Action::ReturnIfTrue).statements(),
+            hook(Action::ReturnIfTrue).statements(goto),
             [format!("if {call} {{ return; }}")]
         );
         assert_eq!(
-            hook(Action::JumpIfTrue(0x8200_1010)).statements(),
+            hook(Action::JumpIfTrue(0x8200_1010)).statements(goto),
             [format!("if {call} {{ pc = 0x82001010; continue; }}")]
         );
     }

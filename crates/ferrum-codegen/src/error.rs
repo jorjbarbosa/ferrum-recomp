@@ -44,6 +44,12 @@ pub enum Error {
         /// Address of the branch.
         addr: u32,
     },
+    /// The list of functions to keep in dispatch form names an address where no function starts.
+    #[error("the functions to keep in dispatch form list {addr:#010x}, where no function starts")]
+    NotAFunction {
+        /// The address.
+        addr: u32,
+    },
     /// A mid-asm hook that the code cannot honor.
     #[error("hook {name} at {addr:#010x}: {why}")]
     InvalidHook {

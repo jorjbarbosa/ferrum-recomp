@@ -281,3 +281,48 @@ fn recomp_finds_setjmp_and_longjmp_unless_the_config_names_them() {
     );
     fs::remove_dir_all(&dir).unwrap();
 }
+
+#[test]
+fn recomp_writes_structured_code_unless_the_config_asks_for_a_dispatcher() {
+    let dir = scratch("structured");
+    let run = |extra: &str| {
+        let config = write_config(&dir, "out", extra);
+        let output = recomp(&config, &[]);
+        let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+        (output.status.success(), stdout, stderr)
+    };
+    let part = || read(dir.join("out/sample-ppc-000/src/lib.rs"));
+
+    let (ok, stdout, stderr) = run("[optimizations]\ncontrol_flow = \"dispatch\"\n");
+    assert!(ok, "{stderr}");
+    assert!(!stdout.contains("structured:"), "{stdout}");
+    assert!(part().contains("let mut pc"), "a dispatcher when asked");
+
+    let (ok, stdout, stderr) = run("");
+    assert!(ok, "{stderr}");
+    assert!(
+        stdout.contains("in dispatch form: 0 calling setjmp, 0 listed, 0 rejected, 0 too deep"),
+        "{stdout}"
+    );
+    let text = part();
+    assert!(
+        text.contains("let _: core::convert::Infallible = {"),
+        "{text}"
+    );
+    assert!(!text.contains("let mut pc"), "{text}");
+
+    let listed = "[optimizations]\ncontrol_flow = \"structured\"\ndispatch = [0x82010000]\n";
+    let (ok, stdout, stderr) = run(listed);
+    assert!(ok, "{stderr}");
+    assert!(stdout.contains(", 1 listed,"), "{stdout}");
+    let text = part();
+    let (first, _) = text.split_once("pub fn sub_82010010").unwrap();
+    assert!(first.contains("let mut pc"), "{first}");
+
+    let unknown = "[optimizations]\ncontrol_flow = \"structured\"\ndispatch = [0x82010004]\n";
+    let (ok, _, stderr) = run(unknown);
+    assert!(!ok);
+    assert!(stderr.contains("where no function starts"), "{stderr}");
+    fs::remove_dir_all(&dir).unwrap();
+}

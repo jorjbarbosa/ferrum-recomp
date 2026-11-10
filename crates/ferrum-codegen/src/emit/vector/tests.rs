@@ -11,6 +11,7 @@ use ferrum_decoder::{Form, Gpr, Insn, OPCODES, Vr, decode};
 
 use crate::emit::{Emitter, emit};
 use crate::error::Error;
+use crate::program::ControlFlow;
 use crate::program::Program;
 
 /// The statements `insn` becomes, without indentation, or the error.
@@ -22,7 +23,7 @@ fn text(insn: Insn) -> Result<String, Error> {
         size: 4,
     };
     let program = Program::new(Code::new(0x8200_0000, &bytes), [function], &routines);
-    let mut e = Emitter::new(&program, function, 0..=u32::MAX);
+    let mut e = Emitter::new(&program, function, 0..=u32::MAX, ControlFlow::Dispatch);
     emit(&mut e, 0x8200_0000, &insn)?;
     let text = e.finish()?;
     Ok(text.lines().map(str::trim).collect::<Vec<_>>().join("\n"))

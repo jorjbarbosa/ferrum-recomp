@@ -56,3 +56,12 @@ midasm = [
 trap_as_nop = false
 # Keep CR, XER, CTR and the reservation in locals. Not implemented: true is an error.
 locals = false
+# How generated functions follow the guest's branches: "structured", the default, with labeled
+# blocks, loops, `break`, `continue` and `if`; or "dispatch", a loop over a `match` on the address
+# of the next block, slower to run and to build. Under "structured", a function that calls setjmp
+# keeps the dispatcher, and so does one whose structured form fails its check or would nest too
+# deep; `ferrum recomp` names those.
+control_flow = "structured"
+# Functions kept in dispatch form under "structured", by entry: a way around a bug of the
+# structuring in one function, until it is fixed.
+dispatch = []

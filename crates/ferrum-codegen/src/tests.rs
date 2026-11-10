@@ -9,11 +9,13 @@ use std::collections::{BTreeMap, BTreeSet};
 use ferrum_analysis::{Code, Function, Rules, SaveRestore, find_save_restore};
 use ferrum_decoder::{CrBit, CrField, Fpr, Gpr, Insn, Vr};
 
-use crate::{Action, Error, Hooks, Import, Library, MidAsm, NonLocal, Override, Program};
+use crate::{
+    Action, ControlFlow, Error, Hooks, Import, Library, MidAsm, NonLocal, Override, Program,
+};
 
-const BASE: u32 = 0x8200_0000;
+pub(crate) const BASE: u32 = 0x8200_0000;
 
-fn li(rt: u8, si: i16) -> Insn {
+pub(crate) fn li(rt: u8, si: i16) -> Insn {
     Insn::Addi {
         rt: Gpr(rt),
         ra: Gpr(0),
@@ -21,7 +23,7 @@ fn li(rt: u8, si: i16) -> Insn {
     }
 }
 
-fn blr() -> Insn {
+pub(crate) fn blr() -> Insn {
     Insn::Bclr {
         bo: 20,
         bi: CrBit(0),
@@ -30,11 +32,11 @@ fn blr() -> Insn {
     }
 }
 
-fn b(li: i32, lk: bool) -> Insn {
+pub(crate) fn b(li: i32, lk: bool) -> Insn {
     Insn::B { li, aa: false, lk }
 }
 
-fn bc(bo: u8, bi: u8, bd: i16) -> Insn {
+pub(crate) fn bc(bo: u8, bi: u8, bd: i16) -> Insn {
     Insn::Bc {
         bo,
         bi: CrBit(bi),
@@ -53,7 +55,7 @@ fn bcctr(bo: u8, lk: bool) -> Insn {
     }
 }
 
-fn assemble(insns: &[Insn]) -> Vec<u8> {
+pub(crate) fn assemble(insns: &[Insn]) -> Vec<u8> {
     insns
         .iter()
         .flat_map(|insn| insn.encode().to_be_bytes())
@@ -275,6 +277,13 @@ fn running_into_the_next_function_is_a_tail_call() {
 /// `cmplwi cr6,r10,1; bgt cr6,+0x24; lis r12; addi r12; slwi r0,r10,2; lwzx r0,r12,r0;
 /// mtctr r0; bctr`, a table of two words, then `li r3,1; blr`.
 fn switch() -> Vec<u8> {
+    switch_with([BASE + 0x2C, BASE + 0x28])
+}
+
+/// A `switch` on r10 of two cases, whose table at `BASE + 0x20` holds `entries`: `cmplwi` and
+/// `bgt` to `BASE + 0x28`, then the table load and `bctr`; `li r3,1` at `BASE + 0x28` and `blr`
+/// at `BASE + 0x2C`.
+pub(crate) fn switch_with(entries: [u32; 2]) -> Vec<u8> {
     let table = BASE + 0x20;
     let insns = [
         Insn::Cmpli {
@@ -312,8 +321,9 @@ fn switch() -> Vec<u8> {
         bcctr(20, false),
     ];
     let mut bytes = assemble(&insns);
-    bytes.extend((BASE + 0x2C).to_be_bytes());
-    bytes.extend((BASE + 0x28).to_be_bytes());
+    for entry in entries {
+        bytes.extend(entry.to_be_bytes());
+    }
     bytes.extend(assemble(&[li(3, 1), blr()]));
     bytes
 }
@@ -340,6 +350,20 @@ fn a_resolved_jump_table_dispatches_on_ctr() {
         ],
     );
     assert!(!text.contains("k.table.lookup(ctx.ctr"), "{text}");
+}
+
+#[test]
+fn a_jump_table_whose_cases_share_a_target_goes_there_once() {
+    let bytes = switch_with([BASE + 0x2C, BASE + 0x2C]);
+    let function = Function {
+        addr: BASE,
+        size: bytes.len() as u32,
+    };
+    let routines = SaveRestore::new();
+    let text = Program::new(Code::new(BASE, &bytes), [function], &routines)
+        .generate()
+        .unwrap();
+    assert_run(&text, &["pc = ctx.ctr as u32;", "}", "0x82000028 => {"]);
 }
 
 /// `main` (words 0 to 4) calls `setjmp` (word 5) and then `longjmp` (word 7), which `rules` say
@@ -924,7 +948,7 @@ fn hooked(midasm: Vec<MidAsm>) -> Result<String, Error> {
         .generate()
 }
 
-fn midasm(word: u32, name: &str, after: bool, action: Action) -> MidAsm {
+pub(crate) fn midasm(word: u32, name: &str, after: bool, action: Action) -> MidAsm {
     MidAsm {
         addr: BASE + 4 * word,
         name: name.to_owned(),
@@ -1044,4 +1068,296 @@ fn trap_as_nop_drops_the_trap_and_counts_stay_per_mnemonic() {
         (statistics.jump_tables, statistics.unresolved_tables),
         (0, 0)
     );
+}
+
+#[test]
+fn statistics_count_the_cycles_that_several_blocks_enter() {
+    let statistics = |bytes: &[u8]| {
+        let function = Function {
+            addr: BASE,
+            size: bytes.len() as u32,
+        };
+        let routines = SaveRestore::new();
+        let statistics = Program::new(Code::new(BASE, bytes), [function], &routines)
+            .statistics()
+            .unwrap();
+        (
+            statistics.irreducible_functions,
+            statistics.dispatch_nodes,
+            statistics.redirected_sites,
+            statistics.rejected.len(),
+        )
+    };
+    // `beq` enters the cycle of A (words 1 and 2) and B (words 3 and 4) at B, and its other side
+    // at A; A leaves by its own `beq` or goes on to B, and B goes back to A.
+    let insns = [
+        bc(12, 2, 12),
+        li(3, 1),
+        bc(12, 2, 12),
+        li(4, 2),
+        b(-12, false),
+        blr(),
+    ];
+    // The sites of word 0 into both entries, A into B and B into A go to the dispatch node.
+    assert_eq!(statistics(&assemble(&insns)), (1, 1, 4, 0));
+    assert_eq!(statistics(&switch()), (0, 0, 0, 0));
+}
+
+/// The structured code of the function that fills `bytes`, with `hooks`.
+fn structured_with(bytes: &[u8], hooks: Hooks) -> String {
+    let function = Function {
+        addr: BASE,
+        size: bytes.len() as u32,
+    };
+    let routines = SaveRestore::new();
+    Program::new(Code::new(BASE, bytes), [function], &routines)
+        .with_hooks(hooks)
+        .with_control_flow(ControlFlow::Structured)
+        .generate()
+        .unwrap()
+}
+
+/// The structured code of the function made of `insns`.
+fn structured(insns: &[Insn]) -> String {
+    structured_with(&assemble(insns), Hooks::default())
+}
+
+#[test]
+fn structured_code_writes_both_sides_of_a_branch_and_breaks_to_the_join() {
+    // beq +12; li r3,1; b +8; li r3,2; blr: block 0x10 joins both sides.
+    let text = structured(&[bc(12, 2, 12), li(3, 1), b(8, false), li(3, 2), blr()]);
+    assert_run(
+        &text,
+        &[
+            "pub fn sub_82000000(ctx: &mut PpcContext, mem: &Memory, k: &Kernels<'_>) {",
+            "let _: core::convert::Infallible = {",
+            "'b_82000010: {",
+            "let _: core::convert::Infallible = {",
+            "if ctx.cr.eq(0) {",
+            "let _: core::convert::Infallible = {",
+            "ctx.r[3] = 0x2;",
+            "break 'b_82000010;",
+            "};",
+            "}",
+            "ctx.r[3] = 0x1;",
+            "break 'b_82000010;",
+            "};",
+            "}",
+            "return;",
+            "};",
+            "}",
+        ],
+    );
+    assert!(
+        !text.contains("let mut pc") && !text.contains("match pc"),
+        "{text}"
+    );
+}
+
+#[test]
+fn structured_code_turns_a_backward_branch_into_a_loop() {
+    // li r3,0; addi r3,r3,1; bdnz -4; blr
+    let addi = Insn::Addi {
+        rt: Gpr(3),
+        ra: Gpr(3),
+        si: 1,
+    };
+    let text = structured(&[li(3, 0), addi, bc(16, 0, -4), blr()]);
+    assert_run(
+        &text,
+        &[
+            "ctx.r[3] = 0x0;",
+            "'l_82000004: loop {",
+            "let _: core::convert::Infallible = {",
+        ],
+    );
+    assert_run(
+        &text,
+        &[
+            "ctx.ctr = ctx.ctr.wrapping_sub(1);",
+            "if (ctx.ctr as u32) != 0 {",
+            "let _: core::convert::Infallible = { continue 'l_82000004; };",
+            "}",
+            "return;",
+            "};",
+            "}",
+        ],
+    );
+}
+
+#[test]
+fn structured_code_matches_a_jump_table_on_its_targets() {
+    let text = structured_with(&switch(), Hooks::default());
+    assert_run(
+        &text,
+        &[
+            "match ctx.ctr as u32 {",
+            "0x82000028 => {",
+            "break 'b_82000028;",
+            "}",
+            "0x8200002c => {",
+            "break 'b_8200002c;",
+            "}",
+            "_ => ferrum_runtime::no_block(\"sub_82000000\", ctx.ctr as u32),",
+            "}",
+        ],
+    );
+    assert_run(&text, &["ctx.r[3] = 0x1;", "break 'b_8200002c;"]);
+}
+
+#[test]
+fn structured_code_enters_a_cycle_with_two_entries_through_its_state() {
+    // The cycle of A (words 1 and 2) and B (words 3 and 4), entered at both, as in
+    // `statistics_count_the_cycles_that_several_blocks_enter`.
+    let text = structured(&[
+        bc(12, 2, 12),
+        li(3, 1),
+        bc(12, 2, 12),
+        li(4, 2),
+        b(-12, false),
+        blr(),
+    ]);
+    assert_run(
+        &text,
+        &[
+            "let mut state_82000004: u32;",
+            "let _: core::convert::Infallible = {",
+            "'b_d_82000004: {",
+            "let _: core::convert::Infallible = {",
+            "if ctx.cr.eq(0) {",
+            "let _: core::convert::Infallible = { state_82000004 = 0x8200000c; break 'b_d_82000004; };",
+            "}",
+            "state_82000004 = 0x82000004;",
+            "break 'b_d_82000004;",
+            "};",
+            "}",
+            "'d_82000004: loop {",
+            "let _: core::convert::Infallible = {",
+            "match state_82000004 {",
+            "0x82000004 => {",
+            "ctx.r[3] = 0x1;",
+            "if ctx.cr.eq(0) {",
+            "let _: core::convert::Infallible = {",
+            "return;",
+            "};",
+            "}",
+            "state_82000004 = 0x8200000c;",
+            "continue 'd_82000004;",
+            "}",
+            "0x8200000c => {",
+            "ctx.r[4] = 0x2;",
+            "state_82000004 = 0x82000004;",
+            "continue 'd_82000004;",
+            "}",
+            "_ => unreachable!(),",
+            "}",
+        ],
+    );
+}
+
+#[test]
+fn structured_code_writes_a_hook_jump_s_block_where_the_hook_is() {
+    // li r3,1; li r4,2; blr; li r3,9; blr, with a jump to word 3 before word 0.
+    let insns = [li(3, 1), li(4, 2), blr(), li(3, 9), blr()];
+    let hooks = Hooks {
+        overrides: Vec::new(),
+        midasm: vec![midasm(0, "jump", false, Action::JumpIfTrue(BASE + 12))],
+    };
+    let text = structured_with(&assemble(&insns), hooks);
+    assert_run(
+        &text,
+        &[
+            "if k.hooks.call(0x82000000, \"jump\", ctx, mem, k) {",
+            "let _: core::convert::Infallible = {",
+            "ctx.r[3] = 0x9;",
+            "return;",
+            "};",
+            "}",
+            "ctx.r[3] = 0x1;",
+        ],
+    );
+}
+
+#[test]
+fn a_function_that_calls_setjmp_keeps_the_dispatcher_in_structured_code() {
+    // `main` calls `setjmp` (word 5) and `longjmp` (word 7), as in `setjmp_program`.
+    let insns = [
+        li(3, 0x100),
+        b(0x10, true),
+        li(4, 1),
+        b(0x10, true),
+        blr(),
+        li(3, 0),
+        blr(),
+        blr(),
+    ];
+    let bytes = assemble(&insns);
+    let functions = [(0, 5), (5, 2), (7, 1)].map(|(offset, words)| Function {
+        addr: BASE + 4 * offset,
+        size: 4 * words,
+    });
+    let routines = SaveRestore::new();
+    let rules = Rules {
+        no_return: BTreeSet::from([BASE + 0x1C]),
+        ..Rules::default()
+    };
+    let text = Program::new(Code::new(BASE, &bytes), functions, &routines)
+        .with_rules(rules)
+        .with_non_local(NonLocal {
+            setjmp: Some(BASE + 0x14),
+            longjmp: Some(BASE + 0x1C),
+        })
+        .with_control_flow(ControlFlow::Structured)
+        .generate()
+        .unwrap();
+    let (main, setjmp) = text.split_once("pub fn sub_82000014").unwrap();
+    assert!(
+        main.contains("let mut jumps = ferrum_runtime::Jumps::new();"),
+        "{main}"
+    );
+    assert!(main.contains("match pc {"), "{main}");
+    assert!(!setjmp.contains("let mut pc"), "{setjmp}");
+    assert!(
+        setjmp.contains("let _: core::convert::Infallible = {"),
+        "{setjmp}"
+    );
+}
+
+#[test]
+fn a_listed_function_keeps_the_dispatcher_in_structured_code() {
+    // Two functions of a `bdnz` loop each; the second is listed.
+    let addi = Insn::Addi {
+        rt: Gpr(3),
+        ra: Gpr(3),
+        si: 1,
+    };
+    let insns = [addi, bc(16, 0, -4), blr(), addi, bc(16, 0, -4), blr()];
+    let bytes = assemble(&insns);
+    let routines = SaveRestore::new();
+    let program = Program::new(
+        Code::new(BASE, &bytes),
+        functions_at(&[(0, 3), (3, 3)]),
+        &routines,
+    )
+    .with_control_flow(ControlFlow::Structured)
+    .with_dispatch([BASE + 12]);
+    let text = program.generate().unwrap();
+    let (first, second) = text.split_once("pub fn sub_8200000c").unwrap();
+    assert!(first.contains("'l_82000000: loop {"), "{first}");
+    assert!(second.contains("match pc {"), "{second}");
+    let statistics = program.statistics().unwrap();
+    assert_eq!(
+        (
+            statistics.structured_functions,
+            statistics.listed_functions,
+            statistics.setjmp_functions
+        ),
+        (1, 1, 0)
+    );
+    let unknown = Program::new(Code::new(BASE, &bytes), functions_at(&[(0, 3)]), &routines)
+        .with_dispatch([BASE + 4]);
+    assert!(matches!(
+        unknown.generate(),
+        Err(Error::NotAFunction { addr }) if addr == BASE + 4
+    ));
 }

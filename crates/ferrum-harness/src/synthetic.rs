@@ -252,6 +252,8 @@ pub fn programs() -> Vec<Synthetic> {
         setjmp(),
         imports(),
         hooks(),
+        two_entries(),
+        nested_loops(),
     ]
 }
 
@@ -354,6 +356,78 @@ fn hooks() -> Synthetic {
             hook(7, "after", true, SyntheticAction::Continue),
             hook(8, "jump", false, SyntheticAction::Jump(10)),
         ],
+        ..Synthetic::default()
+    }
+}
+
+/// A cycle that the code enters at either of two blocks, A and B, which a structured form reaches
+/// through a dispatch node: A adds 1 to r3 and B adds 16, alternately, as many times as r5 says,
+/// starting at A if r4 is not zero and at B if it is.
+fn two_entries() -> Synthetic {
+    let insns = vec![
+        cmpwi(4, 0),
+        bc(12, 2, 1, 6),
+        // A: leave when r5 is zero, else count one and add 1, then on into B
+        cmpwi(5, 0),
+        bc(12, 2, 3, 11),
+        addi(5, 5, -1),
+        addi(3, 3, 1),
+        // B: leave when r5 is zero, else count one and add 16, then back to A
+        cmpwi(5, 0),
+        bc(12, 2, 7, 11),
+        addi(5, 5, -1),
+        addi(3, 3, 16),
+        b(10, 2, false),
+        blr(),
+    ];
+    Synthetic {
+        name: "two_entries",
+        insns,
+        functions: vec![(0, 12)],
+        ..Synthetic::default()
+    }
+}
+
+/// A loop inside a loop: r4 times, the inner loop adds 1 to r3 r5 times, then the outer one adds
+/// 100. When r3 reaches r6, the inner loop leaves both at once.
+fn nested_loops() -> Synthetic {
+    let mr = |ra, rs| Insn::Or {
+        ra: Gpr(ra),
+        rs: Gpr(rs),
+        rb: Gpr(rs),
+        rc: false,
+    };
+    let insns = vec![
+        li(3, 0),
+        mr(7, 4),
+        // outer: done when the count is zero
+        cmpwi(7, 0),
+        bc(12, 2, 3, 15),
+        mr(8, 5),
+        // inner: on to the end of the outer body when the count is zero
+        cmpwi(8, 0),
+        bc(12, 2, 6, 12),
+        addi(3, 3, 1),
+        addi(8, 8, -1),
+        Insn::Cmp {
+            bf: CrField(0),
+            l: false,
+            ra: Gpr(3),
+            rb: Gpr(6),
+        },
+        bc(12, 2, 10, 15),
+        b(11, 5, false),
+        // the end of the outer body
+        addi(3, 3, 100),
+        addi(7, 7, -1),
+        b(14, 2, false),
+        // done
+        blr(),
+    ];
+    Synthetic {
+        name: "nested_loops",
+        insns,
+        functions: vec![(0, 16)],
         ..Synthetic::default()
     }
 }
