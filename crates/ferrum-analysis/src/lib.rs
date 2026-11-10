@@ -9,7 +9,9 @@
 //! the code from its entry, resolving the jump tables of its `switch` statements on the way, and
 //! [`flow`] says what each instruction does to the flow of control. [`find_save_restore`] finds
 //! the compiler's register save and restore routines, which code generation inlines instead of
-//! calling, and [`find_non_local`] the C runtime's `setjmp` and `longjmp`.
+//! calling, and [`find_non_local`] the C runtime's `setjmp` and `longjmp`. A [`Graph`] of a
+//! function's blocks, with its [`Order`] and [`Dominators`], is what the structuring into labeled
+//! blocks and loops ([`Structure`]) works on.
 //!
 //! The liveness of CR, XER, CTR and the reservation is not done yet.
 
@@ -28,6 +30,7 @@ mod non_local;
 mod ranges;
 mod regs;
 mod save_restore;
+mod structure;
 
 pub use cfg::{Block, Cfg, Exit, Function, Rules, build};
 pub use code::Code;
@@ -37,3 +40,7 @@ pub use flow::{Flow, Target, branch_target, flow, is_unconditional, links};
 pub use jump_table::JumpTable;
 pub use non_local::{NonLocalRoutines, find_non_local};
 pub use save_restore::{Family, Routine, SaveRestore, find_save_restore};
+pub use structure::{
+    Branch, Dominators, Edge, Graph, Node, NodeId, NodeKind, Order, Reducible, Rejected, Shape,
+    ShapeId, Structure, Structured, is_reducible, make_reducible, structure, verify,
+};
