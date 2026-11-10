@@ -15,7 +15,8 @@
 //! traits are what a port implements for the imports, reached through [`Kernels`]. [`ops`] holds
 //! the helpers generated code calls. [`longjmp`], [`Jumps`] and [`enter`] carry the guest's
 //! `setjmp` and `longjmp` across recompiled frames by unwinding, and [`HookTable`] holds the port's
-//! mid-asm hooks.
+//! mid-asm hooks. [`no_block`] is what generated code calls when a jump table sends it to an
+//! address where none of the function's blocks starts.
 
 #![warn(missing_docs)]
 #![deny(unsafe_op_in_unsafe_fn)]
@@ -24,6 +25,7 @@
 #[cfg(not(target_pointer_width = "64"))]
 compile_error!("ferrum-runtime maps the whole 4 GiB guest address space and needs a 64-bit host");
 
+mod branch;
 mod context;
 mod error;
 mod fn_table;
@@ -42,6 +44,7 @@ mod vscr;
 #[cfg(test)]
 mod test_support;
 
+pub use branch::no_block;
 pub use context::{INITIAL_MSR, PpcContext, Reserve, XENON_PVR};
 pub use error::Error;
 pub use fn_table::{FnTable, GuestFn};
